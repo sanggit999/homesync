@@ -60,12 +60,11 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
   # Code Generators
-  build_runner: ^2.4.15
-  freezed: ^2.5.7
-  json_serializable: ^6.9.4
+  build_runner: ^2.4.0
+  freezed: ^2.5.0
+  json_serializable: ^6.8.0
 
-  # Unit & Bloc Testing
-  bloc_test: ^9.1.7
+  # Testing
   mocktail: ^1.0.4
 
 flutter:
