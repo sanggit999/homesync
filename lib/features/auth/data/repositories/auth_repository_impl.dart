@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:home_sync/core/errors/failures.dart';
@@ -90,13 +91,18 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, AuthUserEntity>> signInWithGoogle() async {
     try {
+      debugPrint('[HomeSync Auth] Đang bắt đầu đăng nhập bằng tài khoản Google...');
       final response = await _remoteDataSource.signInWithGoogle();
       final user = response.user;
       if (user == null) {
+        debugPrint('[HomeSync Auth] Đăng nhập Google thành công nhưng không lấy được User từ response.');
         return const Left(AuthFailure('Không lấy được thông tin người dùng từ Google.'));
       }
+      debugPrint('[HomeSync Auth] Đăng nhập Google thành công! User ID: ${user.id}, Email: ${user.email}');
       return Right(_toEntity(user));
     } catch (e) {
+      debugPrint('[HomeSync Auth] LỖI Đăng nhập Google: $e');
+      debugPrint('[HomeSync Auth] GỢI Ý: Lỗi đăng nhập Google trên Android debug thường do: \n1. Chưa khai báo mã băm SHA-1/SHA-256 từ keystore debug vào Google Cloud Console hoặc Supabase Dashboard.\n2. Thiết bị chạy thiếu Google Play Services.');
       return Left(AuthFailure(e.toString()));
     }
   }
@@ -104,13 +110,20 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, AuthUserEntity>> signInAnonymously() async {
     try {
+      debugPrint('[HomeSync Auth] Đang bắt đầu đăng nhập ẩn danh (Guest Mode)...');
       final response = await _remoteDataSource.signInAnonymously();
       final user = response.user;
       if (user == null) {
+        debugPrint('[HomeSync Auth] Đăng nhập ẩn danh thành công nhưng user trả về null.');
         return const Left(AuthFailure('Không thể tạo phiên đăng nhập ẩn danh.'));
       }
+      debugPrint('[HomeSync Auth] Đăng nhập ẩn danh thành công! User ID: ${user.id}');
       return Right(_toEntity(user));
     } catch (e) {
+      debugPrint('[HomeSync Auth] LỖI đăng nhập ẩn danh: $e');
+      if (e.toString().contains('422')) {
+        debugPrint('[HomeSync Auth] GỢI Ý: Lỗi 422 thường do chưa BẬT "Anonymous Sign-In" trong Dashboard Supabase -> Authentication -> Providers -> Anonymous!');
+      }
       return Left(AuthFailure(e.toString()));
     }
   }
@@ -118,13 +131,17 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, AuthUserEntity>> linkWithGoogle() async {
     try {
+      debugPrint('[HomeSync Auth] Đang bắt đầu liên kết tài khoản ẩn danh hiện tại với Google...');
       final response = await _remoteDataSource.linkWithGoogle();
       final user = response.user;
       if (user == null) {
+        debugPrint('[HomeSync Auth] Liên kết Google thành công nhưng User nhận được là null.');
         return const Left(AuthFailure('Không thể liên kết tài khoản Google.'));
       }
+      debugPrint('[HomeSync Auth] Liên kết Google thành công! Tài khoản đã được nâng cấp lên Google Auth. User ID: ${user.id}');
       return Right(_toEntity(user));
     } catch (e) {
+      debugPrint('[HomeSync Auth] LỖI Liên kết Google: $e');
       return Left(AuthFailure(e.toString()));
     }
   }

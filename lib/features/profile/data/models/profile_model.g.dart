@@ -15,6 +15,7 @@ _ProfileModel _$ProfileModelFromJson(Map<String, dynamic> json) =>
       reminderDaysBefore: (json['reminder_days_before'] as num?)?.toInt() ?? 7,
       notifyWarranty: json['notify_warranty'] as bool? ?? true,
       notifyMaintenance: json['notify_maintenance'] as bool? ?? true,
+      isAnonymous: json['is_anonymous'] as bool? ?? true,
       updatedAt: json['updated_at'] == null
           ? null
           : DateTime.parse(json['updated_at'] as String),
@@ -29,5 +30,6 @@ Map<String, dynamic> _$ProfileModelToJson(_ProfileModel instance) =>
       'reminder_days_before': instance.reminderDaysBefore,
       'notify_warranty': instance.notifyWarranty,
       'notify_maintenance': instance.notifyMaintenance,
+      'is_anonymous': instance.isAnonymous,
       'updated_at': instance.updatedAt?.toIso8601String(),
     };

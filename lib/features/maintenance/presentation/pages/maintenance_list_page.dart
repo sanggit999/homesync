@@ -9,6 +9,7 @@ import 'package:home_sync/core/widgets/app_card.dart';
 import 'package:home_sync/core/widgets/empty_state_widget.dart';
 import 'package:home_sync/features/service_logs/presentation/cubit/service_log_cubit.dart';
 import 'package:home_sync/features/maintenance/presentation/cubit/maintenance_cubit.dart';
+import 'package:home_sync/core/utils/dialog_utils.dart';
 import 'package:home_sync/features/maintenance/presentation/widgets/add_maintenance_dialog.dart';
 import 'package:home_sync/features/maintenance/presentation/widgets/maintenance_task_card.dart';
 
@@ -57,9 +58,10 @@ class _MaintenanceListPageState extends State<MaintenanceListPage> with SingleTi
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'maintenance_list_fab',
         onPressed: () {
           if (_tabController.index == 0) {
-            showDialog(
+            showAppDialog(
               context: context,
               builder: (ctx) => const AddMaintenanceDialog(),
             );
@@ -91,7 +93,7 @@ class _MaintenanceListPageState extends State<MaintenanceListPage> with SingleTi
                         title: 'Chưa có lịch bảo trì nào',
                         subtitle: 'Tạo lịch nhắc nhở vệ sinh máy lạnh, thay lõi lọc nước, bảo dưỡng xe.',
                         actionLabel: 'Thêm lịch bảo trì',
-                        onAction: () => showDialog(
+                        onAction: () => showAppDialog(
                           context: context,
                           builder: (ctx) => const AddMaintenanceDialog(),
                         ),
@@ -216,7 +218,7 @@ class _MaintenanceListPageState extends State<MaintenanceListPage> with SingleTi
   void _confirmCompleteTask(BuildContext context, String taskId, String title) {
     final costController = TextEditingController();
 
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
         title: const Text('Hoàn Thành Bảo Trì'),

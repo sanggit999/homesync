@@ -57,6 +57,7 @@ class _ItemListPageState extends State<ItemListPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'item_list_fab',
         onPressed: () => context.push(AppRoutes.itemsAdd),
         icon: const Icon(LucideIcons.plus),
         label: const Text('Thêm thiết bị'),

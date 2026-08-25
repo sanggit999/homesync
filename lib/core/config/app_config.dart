@@ -5,19 +5,19 @@ class AppConfig {
   /// URL Dự án Supabase (Được ghi đè qua --dart-define hoặc biến môi trường)
   static const String supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://your-project.supabase.co',
+    defaultValue: '',
   );
 
   /// Anon Key Supabase
   static const String supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: 'eyJhbGciOi...',
+    defaultValue: '',
   );
 
   /// OneSignal App ID
   static const String oneSignalAppId = String.fromEnvironment(
     'ONESIGNAL_APP_ID',
-    defaultValue: 'your-onesignal-app-id',
+    defaultValue: '',
   );
 
   /// Tên ứng dụng

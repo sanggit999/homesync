@@ -14,6 +14,7 @@ abstract class ProfileModel with _$ProfileModel {
     @JsonKey(name: 'reminder_days_before') @Default(7) int reminderDaysBefore,
     @JsonKey(name: 'notify_warranty') @Default(true) bool notifyWarranty,
     @JsonKey(name: 'notify_maintenance') @Default(true) bool notifyMaintenance,
+    @JsonKey(name: 'is_anonymous') @Default(true) bool isAnonymous,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _ProfileModel;
 
