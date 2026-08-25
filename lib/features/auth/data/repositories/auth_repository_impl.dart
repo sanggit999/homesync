@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:home_sync/core/config/app_config.dart';
 import 'package:home_sync/features/auth/domain/repositories/auth_repository.dart';
 
 /// Remote Data Source xử lý giao tiếp Supabase Auth & Google Sign-In SDK
@@ -11,7 +12,10 @@ class AuthRemoteDataSource {
     SupabaseClient? client,
     GoogleSignIn? googleSignIn,
   })  : _client = client ?? Supabase.instance.client,
-        _googleSignIn = googleSignIn ?? GoogleSignIn();
+        _googleSignIn = googleSignIn ??
+            GoogleSignIn(
+              serverClientId: AppConfig.googleWebClientId,
+            );
 
   final SupabaseClient _client;
   final GoogleSignIn _googleSignIn;

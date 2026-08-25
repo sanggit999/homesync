@@ -25,4 +25,10 @@ class AppConfig {
 
   /// Storage Bucket name cho hóa đơn & chứng từ
   static const String receiptsBucket = 'receipts';
+
+  /// Google Web Client ID
+  static const String googleWebClientId = String.fromEnvironment(
+    'GOOGLE_WEB_CLIENT_ID',
+    defaultValue: '',
+  );
 }
