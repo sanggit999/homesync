@@ -8,11 +8,11 @@ class UserProfileHeader extends StatelessWidget {
   const UserProfileHeader({
     super.key,
     required this.user,
-    required this.isGuest,
+    required this.isAnonymous,
   });
 
   final AuthUserEntity? user;
-  final bool isGuest;
+  final bool isAnonymous;
 
   @override
   Widget build(BuildContext context) {
@@ -47,15 +47,15 @@ class UserProfileHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  isGuest
+                  isAnonymous
                       ? 'Chế độ Khách (Chưa sao lưu)'
                       : (email.isNotEmpty ? email : 'Đã xác thực'),
                   style: TextStyle(
                     fontSize: 12,
-                    color: isGuest
+                    color: isAnonymous
                         ? AppColors.warning
                         : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
-                    fontWeight: isGuest ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isAnonymous ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ],

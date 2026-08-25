@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:home_sync/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:home_sync/features/auth/presentation/cubit/auth_state.dart';
@@ -37,21 +38,35 @@ class AuthCubit extends Cubit<AuthState> {
 
   /// Trải nghiệm trước - Đăng nhập ẩn danh 1 chạm (Guest Mode)
   Future<void> signInAnonymously() async {
+    debugPrint('[HOMESYNC DEBUG] Kích hoạt signInAnonymously()...');
     emit(const AuthLoading());
     final result = await signInAnonymouslyUseCase();
     result.fold(
-      (failure) => emit(AuthFailureState(failure.message)),
-      (user) => emit(Authenticated(user: user, isAnonymous: true)),
+      (failure) {
+        debugPrint('[HOMESYNC DEBUG] Đăng nhập ẩn danh LỖI: ${failure.message}');
+        emit(AuthFailureState(failure.message));
+      },
+      (user) {
+        debugPrint('[HOMESYNC DEBUG] Đăng nhập ẩn danh THÀNH CÔNG. User ID: ${user.id}');
+        emit(Authenticated(user: user, isAnonymous: true));
+      },
     );
   }
 
   /// Đăng nhập bằng tài khoản Google
   Future<void> signInWithGoogle() async {
+    debugPrint('[HOMESYNC DEBUG] Kích hoạt signInWithGoogle()...');
     emit(const AuthLoading());
     final result = await signInWithGoogleUseCase();
     result.fold(
-      (failure) => emit(AuthFailureState(failure.message)),
-      (user) => emit(Authenticated(user: user, isAnonymous: false)),
+      (failure) {
+        debugPrint('[HOMESYNC DEBUG] Đăng nhập Google LỖI: ${failure.message}');
+        emit(AuthFailureState(failure.message));
+      },
+      (user) {
+        debugPrint('[HOMESYNC DEBUG] Đăng nhập Google THÀNH CÔNG. User ID: ${user.id}');
+        emit(Authenticated(user: user, isAnonymous: false));
+      },
     );
   }
 

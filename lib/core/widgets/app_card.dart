@@ -26,18 +26,12 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = color ?? (isDark ? AppColors.darkSurface : AppColors.surface);
-    final border = Border.all(
-      color: borderColor ?? (isDark ? AppColors.darkBorder : AppColors.border),
-      width: 1,
-    );
+
 
     final cardContent = Container(
       margin: margin,
-      padding: padding,
       decoration: BoxDecoration(
-        color: cardColor,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: border,
         boxShadow: [
           if (!isDark)
             BoxShadow(
@@ -47,24 +41,52 @@ class AppCard extends StatelessWidget {
             ),
         ],
       ),
-      child: child,
+      child: Material(
+        color: cardColor,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(borderRadius),
+          side: BorderSide(
+            color: borderColor ?? (isDark ? AppColors.darkBorder : AppColors.border),
+            width: 1,
+          ),
+        ),
+        child: Padding(
+          padding: padding,
+          child: child,
+        ),
+      ),
     );
 
     if (onTap != null) {
       return Container(
         margin: margin,
-        child: Material(
-          color: Colors.transparent,
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(borderRadius),
+          boxShadow: [
+            if (!isDark)
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
+        ),
+        child: Material(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(borderRadius),
+          clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: onTap,
             borderRadius: BorderRadius.circular(borderRadius),
             child: Ink(
               padding: padding,
               decoration: BoxDecoration(
-                color: cardColor,
                 borderRadius: BorderRadius.circular(borderRadius),
-                border: border,
+                border: Border.all(
+                  color: borderColor ?? (isDark ? AppColors.darkBorder : AppColors.border),
+                  width: 1,
+                ),
               ),
               child: child,
             ),

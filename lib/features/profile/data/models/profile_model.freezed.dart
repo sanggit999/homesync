@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ProfileModel {
 
- String get id;@JsonKey(name: 'full_name') String? get fullName;@JsonKey(name: 'avatar_url') String? get avatarUrl;@JsonKey(name: 'onesignal_player_id') String? get oneSignalPlayerId;@JsonKey(name: 'reminder_days_before') int get reminderDaysBefore;@JsonKey(name: 'notify_warranty') bool get notifyWarranty;@JsonKey(name: 'notify_maintenance') bool get notifyMaintenance;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
+ String get id;@JsonKey(name: 'full_name') String? get fullName;@JsonKey(name: 'avatar_url') String? get avatarUrl;@JsonKey(name: 'onesignal_player_id') String? get oneSignalPlayerId;@JsonKey(name: 'reminder_days_before') int get reminderDaysBefore;@JsonKey(name: 'notify_warranty') bool get notifyWarranty;@JsonKey(name: 'notify_maintenance') bool get notifyMaintenance;@JsonKey(name: 'is_anonymous') bool get isAnonymous;@JsonKey(name: 'updated_at') DateTime? get updatedAt;
 /// Create a copy of ProfileModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $ProfileModelCopyWith<ProfileModel> get copyWith => _$ProfileModelCopyWithImpl<P
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.oneSignalPlayerId, oneSignalPlayerId) || other.oneSignalPlayerId == oneSignalPlayerId)&&(identical(other.reminderDaysBefore, reminderDaysBefore) || other.reminderDaysBefore == reminderDaysBefore)&&(identical(other.notifyWarranty, notifyWarranty) || other.notifyWarranty == notifyWarranty)&&(identical(other.notifyMaintenance, notifyMaintenance) || other.notifyMaintenance == notifyMaintenance)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.oneSignalPlayerId, oneSignalPlayerId) || other.oneSignalPlayerId == oneSignalPlayerId)&&(identical(other.reminderDaysBefore, reminderDaysBefore) || other.reminderDaysBefore == reminderDaysBefore)&&(identical(other.notifyWarranty, notifyWarranty) || other.notifyWarranty == notifyWarranty)&&(identical(other.notifyMaintenance, notifyMaintenance) || other.notifyMaintenance == notifyMaintenance)&&(identical(other.isAnonymous, isAnonymous) || other.isAnonymous == isAnonymous)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,fullName,avatarUrl,oneSignalPlayerId,reminderDaysBefore,notifyWarranty,notifyMaintenance,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,fullName,avatarUrl,oneSignalPlayerId,reminderDaysBefore,notifyWarranty,notifyMaintenance,isAnonymous,updatedAt);
 
 @override
 String toString() {
-  return 'ProfileModel(id: $id, fullName: $fullName, avatarUrl: $avatarUrl, oneSignalPlayerId: $oneSignalPlayerId, reminderDaysBefore: $reminderDaysBefore, notifyWarranty: $notifyWarranty, notifyMaintenance: $notifyMaintenance, updatedAt: $updatedAt)';
+  return 'ProfileModel(id: $id, fullName: $fullName, avatarUrl: $avatarUrl, oneSignalPlayerId: $oneSignalPlayerId, reminderDaysBefore: $reminderDaysBefore, notifyWarranty: $notifyWarranty, notifyMaintenance: $notifyMaintenance, isAnonymous: $isAnonymous, updatedAt: $updatedAt)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $ProfileModelCopyWith<$Res>  {
   factory $ProfileModelCopyWith(ProfileModel value, $Res Function(ProfileModel) _then) = _$ProfileModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'full_name') String? fullName,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'onesignal_player_id') String? oneSignalPlayerId,@JsonKey(name: 'reminder_days_before') int reminderDaysBefore,@JsonKey(name: 'notify_warranty') bool notifyWarranty,@JsonKey(name: 'notify_maintenance') bool notifyMaintenance,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String id,@JsonKey(name: 'full_name') String? fullName,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'onesignal_player_id') String? oneSignalPlayerId,@JsonKey(name: 'reminder_days_before') int reminderDaysBefore,@JsonKey(name: 'notify_warranty') bool notifyWarranty,@JsonKey(name: 'notify_maintenance') bool notifyMaintenance,@JsonKey(name: 'is_anonymous') bool isAnonymous,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 
@@ -66,7 +66,7 @@ class _$ProfileModelCopyWithImpl<$Res>
 
 /// Create a copy of ProfileModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? fullName = freezed,Object? avatarUrl = freezed,Object? oneSignalPlayerId = freezed,Object? reminderDaysBefore = null,Object? notifyWarranty = null,Object? notifyMaintenance = null,Object? updatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? fullName = freezed,Object? avatarUrl = freezed,Object? oneSignalPlayerId = freezed,Object? reminderDaysBefore = null,Object? notifyWarranty = null,Object? notifyMaintenance = null,Object? isAnonymous = null,Object? updatedAt = freezed,}) {
   return _then(ProfileModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,fullName: freezed == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
@@ -75,6 +75,7 @@ as String?,oneSignalPlayerId: freezed == oneSignalPlayerId ? _self.oneSignalPlay
 as String?,reminderDaysBefore: null == reminderDaysBefore ? _self.reminderDaysBefore : reminderDaysBefore // ignore: cast_nullable_to_non_nullable
 as int,notifyWarranty: null == notifyWarranty ? _self.notifyWarranty : notifyWarranty // ignore: cast_nullable_to_non_nullable
 as bool,notifyMaintenance: null == notifyMaintenance ? _self.notifyMaintenance : notifyMaintenance // ignore: cast_nullable_to_non_nullable
+as bool,isAnonymous: null == isAnonymous ? _self.isAnonymous : isAnonymous // ignore: cast_nullable_to_non_nullable
 as bool,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
@@ -161,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'full_name')  String? fullName, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'onesignal_player_id')  String? oneSignalPlayerId, @JsonKey(name: 'reminder_days_before')  int reminderDaysBefore, @JsonKey(name: 'notify_warranty')  bool notifyWarranty, @JsonKey(name: 'notify_maintenance')  bool notifyMaintenance, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'full_name')  String? fullName, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'onesignal_player_id')  String? oneSignalPlayerId, @JsonKey(name: 'reminder_days_before')  int reminderDaysBefore, @JsonKey(name: 'notify_warranty')  bool notifyWarranty, @JsonKey(name: 'notify_maintenance')  bool notifyMaintenance, @JsonKey(name: 'is_anonymous')  bool isAnonymous, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProfileModel() when $default != null:
-return $default(_that.id,_that.fullName,_that.avatarUrl,_that.oneSignalPlayerId,_that.reminderDaysBefore,_that.notifyWarranty,_that.notifyMaintenance,_that.updatedAt);case _:
+return $default(_that.id,_that.fullName,_that.avatarUrl,_that.oneSignalPlayerId,_that.reminderDaysBefore,_that.notifyWarranty,_that.notifyMaintenance,_that.isAnonymous,_that.updatedAt);case _:
   return orElse();
 
 }
@@ -182,10 +183,10 @@ return $default(_that.id,_that.fullName,_that.avatarUrl,_that.oneSignalPlayerId,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'full_name')  String? fullName, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'onesignal_player_id')  String? oneSignalPlayerId, @JsonKey(name: 'reminder_days_before')  int reminderDaysBefore, @JsonKey(name: 'notify_warranty')  bool notifyWarranty, @JsonKey(name: 'notify_maintenance')  bool notifyMaintenance, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'full_name')  String? fullName, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'onesignal_player_id')  String? oneSignalPlayerId, @JsonKey(name: 'reminder_days_before')  int reminderDaysBefore, @JsonKey(name: 'notify_warranty')  bool notifyWarranty, @JsonKey(name: 'notify_maintenance')  bool notifyMaintenance, @JsonKey(name: 'is_anonymous')  bool isAnonymous, @JsonKey(name: 'updated_at')  DateTime? updatedAt)  $default,) {final _that = this;
 switch (_that) {
 case _ProfileModel():
-return $default(_that.id,_that.fullName,_that.avatarUrl,_that.oneSignalPlayerId,_that.reminderDaysBefore,_that.notifyWarranty,_that.notifyMaintenance,_that.updatedAt);case _:
+return $default(_that.id,_that.fullName,_that.avatarUrl,_that.oneSignalPlayerId,_that.reminderDaysBefore,_that.notifyWarranty,_that.notifyMaintenance,_that.isAnonymous,_that.updatedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +203,10 @@ return $default(_that.id,_that.fullName,_that.avatarUrl,_that.oneSignalPlayerId,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'full_name')  String? fullName, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'onesignal_player_id')  String? oneSignalPlayerId, @JsonKey(name: 'reminder_days_before')  int reminderDaysBefore, @JsonKey(name: 'notify_warranty')  bool notifyWarranty, @JsonKey(name: 'notify_maintenance')  bool notifyMaintenance, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'full_name')  String? fullName, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'onesignal_player_id')  String? oneSignalPlayerId, @JsonKey(name: 'reminder_days_before')  int reminderDaysBefore, @JsonKey(name: 'notify_warranty')  bool notifyWarranty, @JsonKey(name: 'notify_maintenance')  bool notifyMaintenance, @JsonKey(name: 'is_anonymous')  bool isAnonymous, @JsonKey(name: 'updated_at')  DateTime? updatedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _ProfileModel() when $default != null:
-return $default(_that.id,_that.fullName,_that.avatarUrl,_that.oneSignalPlayerId,_that.reminderDaysBefore,_that.notifyWarranty,_that.notifyMaintenance,_that.updatedAt);case _:
+return $default(_that.id,_that.fullName,_that.avatarUrl,_that.oneSignalPlayerId,_that.reminderDaysBefore,_that.notifyWarranty,_that.notifyMaintenance,_that.isAnonymous,_that.updatedAt);case _:
   return null;
 
 }
@@ -217,7 +218,7 @@ return $default(_that.id,_that.fullName,_that.avatarUrl,_that.oneSignalPlayerId,
 @JsonSerializable()
 
 class _ProfileModel implements ProfileModel {
-  const _ProfileModel({required this.id, @JsonKey(name: 'full_name') this.fullName, @JsonKey(name: 'avatar_url') this.avatarUrl, @JsonKey(name: 'onesignal_player_id') this.oneSignalPlayerId, @JsonKey(name: 'reminder_days_before') this.reminderDaysBefore = 7, @JsonKey(name: 'notify_warranty') this.notifyWarranty = true, @JsonKey(name: 'notify_maintenance') this.notifyMaintenance = true, @JsonKey(name: 'updated_at') this.updatedAt});
+  const _ProfileModel({required this.id, @JsonKey(name: 'full_name') this.fullName, @JsonKey(name: 'avatar_url') this.avatarUrl, @JsonKey(name: 'onesignal_player_id') this.oneSignalPlayerId, @JsonKey(name: 'reminder_days_before') this.reminderDaysBefore = 7, @JsonKey(name: 'notify_warranty') this.notifyWarranty = true, @JsonKey(name: 'notify_maintenance') this.notifyMaintenance = true, @JsonKey(name: 'is_anonymous') this.isAnonymous = true, @JsonKey(name: 'updated_at') this.updatedAt});
   factory _ProfileModel.fromJson(Map<String, dynamic> json) => _$ProfileModelFromJson(json);
 
 @override final  String id;
@@ -227,6 +228,7 @@ class _ProfileModel implements ProfileModel {
 @override@JsonKey(name: 'reminder_days_before') final  int reminderDaysBefore;
 @override@JsonKey(name: 'notify_warranty') final  bool notifyWarranty;
 @override@JsonKey(name: 'notify_maintenance') final  bool notifyMaintenance;
+@override@JsonKey(name: 'is_anonymous') final  bool isAnonymous;
 @override@JsonKey(name: 'updated_at') final  DateTime? updatedAt;
 
 /// Create a copy of ProfileModel
@@ -242,16 +244,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.oneSignalPlayerId, oneSignalPlayerId) || other.oneSignalPlayerId == oneSignalPlayerId)&&(identical(other.reminderDaysBefore, reminderDaysBefore) || other.reminderDaysBefore == reminderDaysBefore)&&(identical(other.notifyWarranty, notifyWarranty) || other.notifyWarranty == notifyWarranty)&&(identical(other.notifyMaintenance, notifyMaintenance) || other.notifyMaintenance == notifyMaintenance)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.oneSignalPlayerId, oneSignalPlayerId) || other.oneSignalPlayerId == oneSignalPlayerId)&&(identical(other.reminderDaysBefore, reminderDaysBefore) || other.reminderDaysBefore == reminderDaysBefore)&&(identical(other.notifyWarranty, notifyWarranty) || other.notifyWarranty == notifyWarranty)&&(identical(other.notifyMaintenance, notifyMaintenance) || other.notifyMaintenance == notifyMaintenance)&&(identical(other.isAnonymous, isAnonymous) || other.isAnonymous == isAnonymous)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,fullName,avatarUrl,oneSignalPlayerId,reminderDaysBefore,notifyWarranty,notifyMaintenance,updatedAt);
+int get hashCode => Object.hash(runtimeType,id,fullName,avatarUrl,oneSignalPlayerId,reminderDaysBefore,notifyWarranty,notifyMaintenance,isAnonymous,updatedAt);
 
 @override
 String toString() {
-  return 'ProfileModel(id: $id, fullName: $fullName, avatarUrl: $avatarUrl, oneSignalPlayerId: $oneSignalPlayerId, reminderDaysBefore: $reminderDaysBefore, notifyWarranty: $notifyWarranty, notifyMaintenance: $notifyMaintenance, updatedAt: $updatedAt)';
+  return 'ProfileModel(id: $id, fullName: $fullName, avatarUrl: $avatarUrl, oneSignalPlayerId: $oneSignalPlayerId, reminderDaysBefore: $reminderDaysBefore, notifyWarranty: $notifyWarranty, notifyMaintenance: $notifyMaintenance, isAnonymous: $isAnonymous, updatedAt: $updatedAt)';
 }
 
 
@@ -262,7 +264,7 @@ abstract mixin class _$ProfileModelCopyWith<$Res> implements $ProfileModelCopyWi
   factory _$ProfileModelCopyWith(_ProfileModel value, $Res Function(_ProfileModel) _then) = __$ProfileModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'full_name') String? fullName,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'onesignal_player_id') String? oneSignalPlayerId,@JsonKey(name: 'reminder_days_before') int reminderDaysBefore,@JsonKey(name: 'notify_warranty') bool notifyWarranty,@JsonKey(name: 'notify_maintenance') bool notifyMaintenance,@JsonKey(name: 'updated_at') DateTime? updatedAt
+ String id,@JsonKey(name: 'full_name') String? fullName,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'onesignal_player_id') String? oneSignalPlayerId,@JsonKey(name: 'reminder_days_before') int reminderDaysBefore,@JsonKey(name: 'notify_warranty') bool notifyWarranty,@JsonKey(name: 'notify_maintenance') bool notifyMaintenance,@JsonKey(name: 'is_anonymous') bool isAnonymous,@JsonKey(name: 'updated_at') DateTime? updatedAt
 });
 
 
@@ -279,7 +281,7 @@ class __$ProfileModelCopyWithImpl<$Res>
 
 /// Create a copy of ProfileModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? fullName = freezed,Object? avatarUrl = freezed,Object? oneSignalPlayerId = freezed,Object? reminderDaysBefore = null,Object? notifyWarranty = null,Object? notifyMaintenance = null,Object? updatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? fullName = freezed,Object? avatarUrl = freezed,Object? oneSignalPlayerId = freezed,Object? reminderDaysBefore = null,Object? notifyWarranty = null,Object? notifyMaintenance = null,Object? isAnonymous = null,Object? updatedAt = freezed,}) {
   return _then(_ProfileModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,fullName: freezed == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
@@ -288,6 +290,7 @@ as String?,oneSignalPlayerId: freezed == oneSignalPlayerId ? _self.oneSignalPlay
 as String?,reminderDaysBefore: null == reminderDaysBefore ? _self.reminderDaysBefore : reminderDaysBefore // ignore: cast_nullable_to_non_nullable
 as int,notifyWarranty: null == notifyWarranty ? _self.notifyWarranty : notifyWarranty // ignore: cast_nullable_to_non_nullable
 as bool,notifyMaintenance: null == notifyMaintenance ? _self.notifyMaintenance : notifyMaintenance // ignore: cast_nullable_to_non_nullable
+as bool,isAnonymous: null == isAnonymous ? _self.isAnonymous : isAnonymous // ignore: cast_nullable_to_non_nullable
 as bool,updatedAt: freezed == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
