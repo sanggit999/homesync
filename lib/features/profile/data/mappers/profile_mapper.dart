@@ -14,6 +14,7 @@ class ProfileMapper {
       reminderDaysBefore: model.reminderDaysBefore,
       notifyWarranty: model.notifyWarranty,
       notifyMaintenance: model.notifyMaintenance,
+      isAnonymous: model.isAnonymous,
       updatedAt: model.updatedAt,
     );
   }
@@ -27,6 +28,7 @@ class ProfileMapper {
       reminderDaysBefore: entity.reminderDaysBefore,
       notifyWarranty: entity.notifyWarranty,
       notifyMaintenance: entity.notifyMaintenance,
+      isAnonymous: entity.isAnonymous,
       updatedAt: entity.updatedAt,
     );
   }

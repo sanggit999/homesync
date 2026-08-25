@@ -11,6 +11,7 @@ import 'package:home_sync/core/utils/warranty_calculator.dart';
 import 'package:home_sync/core/widgets/app_card.dart';
 import 'package:home_sync/core/widgets/status_badge.dart';
 import 'package:home_sync/core/widgets/warranty_progress_bar.dart';
+import 'package:home_sync/core/utils/dialog_utils.dart';
 import 'package:home_sync/features/items/presentation/cubit/item_form_cubit.dart';
 import 'package:home_sync/features/items/presentation/cubit/item_list_cubit.dart';
 
@@ -313,7 +314,7 @@ class ItemDetailPage extends StatelessWidget {
   }
 
   void _confirmDelete(BuildContext context, String itemName) {
-    showDialog(
+    showAppDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
         title: const Text('Xác nhận xóa'),

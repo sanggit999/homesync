@@ -8,6 +8,7 @@ class ProfileEntity {
     this.reminderDaysBefore = 7,
     this.notifyWarranty = true,
     this.notifyMaintenance = true,
+    this.isAnonymous = true,
     this.updatedAt,
   });
 
@@ -18,5 +19,6 @@ class ProfileEntity {
   final int reminderDaysBefore;
   final bool notifyWarranty;
   final bool notifyMaintenance;
+  final bool isAnonymous;
   final DateTime? updatedAt;
 }

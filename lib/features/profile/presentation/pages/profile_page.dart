@@ -7,6 +7,7 @@ import 'package:home_sync/core/router/app_routes.dart';
 import 'package:home_sync/core/widgets/app_card.dart';
 import 'package:home_sync/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:home_sync/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:home_sync/core/utils/dialog_utils.dart';
 import 'package:home_sync/features/profile/presentation/widgets/user_profile_header.dart';
 
 /// Tab 4: Màn hình Cá nhân & Cài đặt
@@ -27,7 +28,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
-    final isGuest = authState is Authenticated && authState.isAnonymous;
+    final isAnonymous = authState is Authenticated && authState.isAnonymous;
     final user = authState is Authenticated ? authState.user : null;
 
     return Scaffold(
@@ -38,10 +39,10 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.all(16),
         children: [
           // 1. User Profile Header
-          UserProfileHeader(user: user, isGuest: isGuest),
+          UserProfileHeader(user: user, isAnonymous: isAnonymous),
 
           // 2. Nút "Liên kết với Google để lưu Cloud" (khi ở Guest Mode)
-          if (isGuest) ...[
+          if (isAnonymous) ...[
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: () => context.read<AuthCubit>().linkWithGoogle(),
@@ -126,11 +127,18 @@ class _ProfilePageState extends State<ProfilePage> {
 
           const SizedBox(height: 24),
 
-          // 5. Nút Đăng Xuất
+          // 5. Nút Đăng Xuất / Xóa dữ liệu dùng thử
           OutlinedButton.icon(
-            onPressed: () => _confirmSignOut(context),
-            icon: const Icon(LucideIcons.logOut, size: 18, color: AppColors.error),
-            label: const Text('Đăng xuất', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+            onPressed: () => _confirmSignOut(context, isAnonymous),
+            icon: Icon(
+              isAnonymous ? LucideIcons.trash2 : LucideIcons.logOut,
+              size: 18,
+              color: AppColors.error,
+            ),
+            label: Text(
+              isAnonymous ? 'Xóa dữ liệu dùng thử' : 'Đăng xuất',
+              style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.bold),
+            ),
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 50),
               side: const BorderSide(color: AppColors.error, width: 1.2),
@@ -143,22 +151,55 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _confirmSignOut(BuildContext context) {
-    showDialog(
+  void _confirmSignOut(BuildContext context, bool isAnonymous) {
+    showAppDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Xác nhận đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất khỏi HomeSync?'),
+        title: Row(
+          children: [
+            Icon(
+              isAnonymous ? LucideIcons.alertTriangle : LucideIcons.logOut,
+              color: AppColors.error,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                isAnonymous ? 'CẢNH BÁO MẤT DỮ LIỆU' : 'Xác nhận đăng xuất',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          isAnonymous
+              ? 'Bạn đang sử dụng chế độ Khách (Guest Mode).\n\nNếu đăng xuất, toàn bộ thiết bị và hóa đơn bảo hành đã tạo sẽ BỊ XÓA VĨNH VIỄN khỏi máy này và không thể khôi phục.\n\nHãy liên kết tài khoản Google để bảo lưu dữ liệu.'
+              : 'Bạn có chắc chắn muốn đăng xuất khỏi HomeSync?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Hủy')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Hủy'),
+          ),
+          if (isAnonymous)
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.read<AuthCubit>().linkWithGoogle();
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+              child: const Text('Liên kết Google ngay'),
+            ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               context.read<AuthCubit>().signOut();
               context.go(AppRoutes.welcome);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
-            child: const Text('Đăng xuất'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isAnonymous ? Colors.grey : AppColors.error,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(isAnonymous ? 'Vẫn đăng xuất (Xóa hết)' : 'Đăng xuất'),
           ),
         ],
       ),
