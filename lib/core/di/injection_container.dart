@@ -7,29 +7,36 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/auth_usecases.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
 
 // Features: Items
 import '../../features/items/data/repositories/item_repository_impl.dart';
 import '../../features/items/domain/repositories/item_repository.dart';
 import '../../features/items/domain/usecases/item_usecases.dart';
+import '../../features/items/presentation/cubit/item_form_cubit.dart';
+import '../../features/items/presentation/cubit/item_list_cubit.dart';
 
 // Features: Maintenance
 import '../../features/maintenance/data/repositories/maintenance_repository_impl.dart';
 import '../../features/maintenance/domain/repositories/maintenance_repository.dart';
 import '../../features/maintenance/domain/usecases/maintenance_usecases.dart';
+import '../../features/maintenance/presentation/cubit/maintenance_cubit.dart';
 
 // Features: Service Logs
 import '../../features/service_logs/data/repositories/service_log_repository_impl.dart';
 import '../../features/service_logs/domain/repositories/service_log_repository.dart';
 import '../../features/service_logs/domain/usecases/service_log_usecases.dart';
+import '../../features/service_logs/presentation/cubit/service_log_cubit.dart';
 
 // Features: Profile
 import '../../features/profile/data/repositories/profile_repository_impl.dart';
 import '../../features/profile/domain/repositories/profile_repository.dart';
 import '../../features/profile/domain/usecases/profile_usecases.dart';
+import '../../features/profile/presentation/cubit/profile_cubit.dart';
 
 // Features: Dashboard
 import '../../features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
+import '../../features/dashboard/presentation/cubit/dashboard_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -150,6 +157,74 @@ Future<void> initDependencies() async {
       itemRepository: sl<ItemRepository>(),
       maintenanceRepository: sl<MaintenanceRepository>(),
       serviceLogRepository: sl<ServiceLogRepository>(),
+    ),
+  );
+
+  // ==========================================
+  // 5. PRESENTATION LOGIC (CUBITS)
+  // ==========================================
+  sl.registerFactory(
+    () => AuthCubit(
+      signInAnonymouslyUseCase: sl<SignInAnonymouslyUseCase>(),
+      signInWithGoogleUseCase: sl<SignInWithGoogleUseCase>(),
+      linkWithGoogleUseCase: sl<LinkWithGoogleUseCase>(),
+      signOutUseCase: sl<SignOutUseCase>(),
+      getCurrentUserUseCase: sl<GetCurrentUserUseCase>(),
+      updatePlayerIdUseCase: sl<UpdatePlayerIdUseCase>(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => DashboardCubit(
+      getDashboardSummaryUseCase: sl<GetDashboardSummaryUseCase>(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => ItemListCubit(
+      getItemsUseCase: sl<GetItemsUseCase>(),
+      toggleFavoriteUseCase: sl<ToggleFavoriteUseCase>(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => ItemFormCubit(
+      addItemUseCase: sl<AddItemUseCase>(),
+      updateItemUseCase: sl<UpdateItemUseCase>(),
+      deleteItemUseCase: sl<DeleteItemUseCase>(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => MaintenanceCubit(
+      getTasksUseCase: sl<GetTasksUseCase>(),
+      addTaskUseCase: sl<AddTaskUseCase>(),
+      updateTaskUseCase: sl<UpdateTaskUseCase>(),
+      completeTaskUseCase: sl<CompleteTaskUseCase>(),
+      deleteTaskUseCase: sl<DeleteTaskUseCase>(),
+      getCategoriesUseCase: sl<GetCategoriesUseCase>(),
+      getPresetsByCategoryUseCase: sl<GetPresetsByCategoryUseCase>(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => ServiceLogCubit(
+      getServiceLogsUseCase: sl<GetServiceLogsUseCase>(),
+      addServiceLogUseCase: sl<AddServiceLogUseCase>(),
+      deleteServiceLogUseCase: sl<DeleteServiceLogUseCase>(),
+      getTotalCostUseCase: sl<GetTotalCostUseCase>(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => ProfileCubit(
+      getProfileUseCase: sl<GetProfileUseCase>(),
+      updateProfileUseCase: sl<UpdateProfileUseCase>(),
+      getHomesUseCase: sl<GetHomesUseCase>(),
+      createHomeUseCase: sl<CreateHomeUseCase>(),
+      getHomeMembersUseCase: sl<GetHomeMembersUseCase>(),
+      addHomeMemberUseCase: sl<AddHomeMemberUseCase>(),
+      removeHomeMemberUseCase: sl<RemoveHomeMemberUseCase>(),
     ),
   );
 }
