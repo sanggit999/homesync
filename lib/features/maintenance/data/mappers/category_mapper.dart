@@ -1,0 +1,46 @@
+import '../../domain/entities/category_entity.dart';
+import '../models/category_model.dart';
+import '../models/maintenance_preset_model.dart';
+
+/// Bộ chuyển đổi 2 chiều giữa CategoryModel / MaintenancePresetModel và CategoryEntity / MaintenancePresetEntity
+class CategoryMapper {
+  CategoryMapper._();
+
+  static CategoryEntity toEntity(CategoryModel model) {
+    return CategoryEntity(
+      id: model.id,
+      name: model.name,
+      iconName: model.iconName,
+      createdAt: model.createdAt,
+    );
+  }
+
+  static CategoryModel toModel(CategoryEntity entity) {
+    return CategoryModel(
+      id: entity.id,
+      name: entity.name,
+      iconName: entity.iconName,
+      createdAt: entity.createdAt,
+    );
+  }
+
+  static MaintenancePresetEntity presetToEntity(MaintenancePresetModel model) {
+    return MaintenancePresetEntity(
+      id: model.id,
+      categoryId: model.categoryId,
+      presetName: model.presetName,
+      defaultFrequencyMonths: model.defaultFrequencyMonths,
+      suggestedPriority: model.suggestedPriority,
+    );
+  }
+
+  static MaintenancePresetModel presetToModel(MaintenancePresetEntity entity) {
+    return MaintenancePresetModel(
+      id: entity.id,
+      categoryId: entity.categoryId,
+      presetName: entity.presetName,
+      defaultFrequencyMonths: entity.defaultFrequencyMonths,
+      suggestedPriority: entity.suggestedPriority,
+    );
+  }
+}
