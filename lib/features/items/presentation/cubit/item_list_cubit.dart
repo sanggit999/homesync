@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/item_entity.dart';
-import '../../domain/usecases/item_usecases.dart';
-import 'item_list_state.dart';
+import 'package:home_sync/features/items/domain/entities/item_entity.dart';
+import 'package:home_sync/features/items/domain/usecases/item_usecases.dart';
+import 'package:home_sync/features/items/presentation/cubit/item_list_state.dart';
 
 export 'item_list_state.dart';
 

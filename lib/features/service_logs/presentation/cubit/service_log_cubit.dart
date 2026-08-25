@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/service_log_entity.dart';
-import '../../domain/usecases/service_log_usecases.dart';
-import 'service_log_state.dart';
+import 'package:home_sync/features/service_logs/domain/entities/service_log_entity.dart';
+import 'package:home_sync/features/service_logs/domain/usecases/service_log_usecases.dart';
+import 'package:home_sync/features/service_logs/presentation/cubit/service_log_state.dart';
 
 export 'service_log_state.dart';
 

@@ -1,5 +1,5 @@
-import '../../domain/entities/profile_entity.dart';
-import '../models/profile_model.dart';
+import 'package:home_sync/features/profile/domain/entities/profile_entity.dart';
+import 'package:home_sync/features/profile/data/models/profile_model.dart';
 
 /// Bộ chuyển đổi 2 chiều giữa ProfileModel và ProfileEntity
 class ProfileMapper {

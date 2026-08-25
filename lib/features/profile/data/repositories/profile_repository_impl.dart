@@ -1,12 +1,12 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../domain/repositories/profile_repository.dart';
-import '../mappers/home_mapper.dart';
-import '../mappers/profile_mapper.dart';
-import '../models/home_member_model.dart';
-import '../models/home_model.dart';
-import '../models/profile_model.dart';
+import 'package:home_sync/features/profile/domain/repositories/profile_repository.dart';
+import 'package:home_sync/features/profile/data/mappers/home_mapper.dart';
+import 'package:home_sync/features/profile/data/mappers/profile_mapper.dart';
+import 'package:home_sync/features/profile/data/models/home_member_model.dart';
+import 'package:home_sync/features/profile/data/models/home_model.dart';
+import 'package:home_sync/features/profile/data/models/profile_model.dart';
 
 /// Remote Data Source cho Profile & Homes
 class ProfileRemoteDataSource {

@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
-import '../entities/category_entity.dart';
-import '../entities/maintenance_task_entity.dart';
+import 'package:home_sync/features/maintenance/domain/entities/category_entity.dart';
+import 'package:home_sync/features/maintenance/domain/entities/maintenance_task_entity.dart';
 export '../entities/category_entity.dart';
 export '../entities/maintenance_task_entity.dart';
 

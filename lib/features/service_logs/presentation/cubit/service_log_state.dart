@@ -1,4 +1,4 @@
-import '../../domain/entities/service_log_entity.dart';
+import 'package:home_sync/features/service_logs/domain/entities/service_log_entity.dart';
 
 /// Dart 3 Sealed Class cho ServiceLog State
 sealed class ServiceLogState {

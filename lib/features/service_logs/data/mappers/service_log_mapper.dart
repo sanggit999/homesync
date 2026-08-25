@@ -1,5 +1,5 @@
-import '../../domain/entities/service_log_entity.dart';
-import '../models/service_log_model.dart';
+import 'package:home_sync/features/service_logs/domain/entities/service_log_entity.dart';
+import 'package:home_sync/features/service_logs/data/models/service_log_model.dart';
 
 /// Bộ chuyển đổi 2 chiều giữa ServiceLogModel và ServiceLogEntity
 class ServiceLogMapper {

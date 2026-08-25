@@ -1,4 +1,4 @@
-import '../../domain/entities/auth_user_entity.dart';
+import 'package:home_sync/features/auth/domain/entities/auth_user_entity.dart';
 
 /// Dart 3 Sealed Class cho Authentication State
 sealed class AuthState {

@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:home_sync/core/usecases/usecase.dart';
-import '../repositories/maintenance_repository.dart';
+import 'package:home_sync/features/maintenance/domain/repositories/maintenance_repository.dart';
 
 /// Params cho GetTasksUseCase
 class GetTasksParams {

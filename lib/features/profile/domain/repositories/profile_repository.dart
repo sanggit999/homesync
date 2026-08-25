@@ -1,8 +1,10 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
-import '../entities/home_entity.dart';
-import '../entities/profile_entity.dart';
+import 'package:home_sync/features/profile/domain/entities/home_entity.dart';
+import 'package:home_sync/features/profile/domain/entities/home_member_entity.dart';
+import 'package:home_sync/features/profile/domain/entities/profile_entity.dart';
 export '../entities/home_entity.dart';
+export '../entities/home_member_entity.dart';
 export '../entities/profile_entity.dart';
 
 /// Abstract Repository Contract cho Profile & Quản lý Nhà dùng fpdart Either

@@ -40,6 +40,10 @@ class MaintenanceTaskEntity {
   final String? notes;
   final DateTime? createdAt;
 
+  String get title => taskName;
+  DateTime get dueDate => nextDueDate;
+  int get intervalMonths => frequencyMonths;
+
   /// Số ngày còn lại đến hạn bảo trì
   int get remainingDays => WarrantyCalculator.calculateDaysRemaining(nextDueDate);
 

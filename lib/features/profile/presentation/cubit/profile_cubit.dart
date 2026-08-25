@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/profile_entity.dart';
-import '../../domain/usecases/profile_usecases.dart';
-import 'profile_state.dart';
+import 'package:home_sync/features/profile/domain/entities/profile_entity.dart';
+import 'package:home_sync/features/profile/domain/usecases/profile_usecases.dart';
+import 'package:home_sync/features/profile/presentation/cubit/profile_state.dart';
 
 export 'profile_state.dart';
 

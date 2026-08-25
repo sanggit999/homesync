@@ -26,7 +26,7 @@ dependencies:
 
   # UI Design System, Fonts & Icons
   google_fonts: ^8.2.1
-  lucide_icons: ^0.257.0
+  lucide_icons_flutter: ^3.1.17
   cupertino_icons: ^1.0.8
 
   # Image Handling & Caching
@@ -58,6 +58,7 @@ dependencies:
   freezed_annotation: ^3.1.0
   json_annotation: ^4.12.0
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -74,5 +75,18 @@ dev_dependencies:
   mocktail: ^1.0.4
   bloc_test: ^10.0.0
 
+  # App Launcher Icon Generator
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/

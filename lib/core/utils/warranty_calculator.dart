@@ -1,4 +1,4 @@
-import '../constants/app_constants.dart';
+import 'package:home_sync/core/constants/app_constants.dart';
 
 /// Trạng thái bảo hành chuẩn hóa
 enum WarrantyStatus {

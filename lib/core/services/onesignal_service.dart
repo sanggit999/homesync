@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
-import '../config/app_config.dart';
+import 'package:home_sync/core/config/app_config.dart';
 
 /// Dịch vụ quản lý thông báo đẩy OneSignal
 class OneSignalService {

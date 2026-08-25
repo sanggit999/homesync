@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:home_sync/core/usecases/usecase.dart';
-import '../repositories/service_log_repository.dart';
+import 'package:home_sync/features/service_logs/domain/repositories/service_log_repository.dart';
 
 /// Params cho GetServiceLogsUseCase
 class GetServiceLogsParams {

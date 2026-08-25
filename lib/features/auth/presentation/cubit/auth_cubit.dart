@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/usecases/auth_usecases.dart';
-import 'auth_state.dart';
+import 'package:home_sync/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:home_sync/features/auth/presentation/cubit/auth_state.dart';
 
 export 'auth_state.dart';
 
