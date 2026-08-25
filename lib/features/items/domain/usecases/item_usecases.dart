@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:home_sync/core/usecases/usecase.dart';
-import '../repositories/item_repository.dart';
+import 'package:home_sync/features/items/domain/repositories/item_repository.dart';
 
 /// Params cho GetItemsUseCase
 class GetItemsParams {

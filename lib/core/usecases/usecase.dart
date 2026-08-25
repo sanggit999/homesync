@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import '../errors/failures.dart';
+import 'package:home_sync/core/errors/failures.dart';
 
 /// Base UseCase Interface cho mọi nghiệp vụ Async trả về `Either<Failure, T>`
 abstract class UseCase<T, Params> {

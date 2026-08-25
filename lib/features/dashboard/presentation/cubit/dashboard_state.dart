@@ -1,4 +1,4 @@
-import '../../domain/usecases/get_dashboard_summary_usecase.dart';
+import 'package:home_sync/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
 
 /// Dart 3 Sealed Class cho Dashboard State
 sealed class DashboardState {

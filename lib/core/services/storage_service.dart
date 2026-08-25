@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../config/app_config.dart';
-import '../constants/app_constants.dart';
+import 'package:home_sync/core/config/app_config.dart';
+import 'package:home_sync/core/constants/app_constants.dart';
 
 /// Dịch vụ tải và quản lý hình ảnh / tài liệu trên Supabase Storage
 class StorageService {

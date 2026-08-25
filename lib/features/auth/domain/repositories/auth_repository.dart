@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../entities/auth_user_entity.dart';
+import 'package:home_sync/features/auth/domain/entities/auth_user_entity.dart';
 export '../entities/auth_user_entity.dart';
 
 /// Abstract Repository Contract cho Authentication sử dụng Either (fpdart)

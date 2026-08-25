@@ -1,6 +1,6 @@
-import '../../domain/entities/category_entity.dart';
-import '../models/category_model.dart';
-import '../models/maintenance_preset_model.dart';
+import 'package:home_sync/features/maintenance/domain/entities/category_entity.dart';
+import 'package:home_sync/features/maintenance/data/models/category_model.dart';
+import 'package:home_sync/features/maintenance/data/models/maintenance_preset_model.dart';
 
 /// Bộ chuyển đổi 2 chiều giữa CategoryModel / MaintenancePresetModel và CategoryEntity / MaintenancePresetEntity
 class CategoryMapper {

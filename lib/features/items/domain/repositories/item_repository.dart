@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
-import '../entities/item_document_entity.dart';
-import '../entities/item_entity.dart';
+import 'package:home_sync/features/items/domain/entities/item_document_entity.dart';
+import 'package:home_sync/features/items/domain/entities/item_entity.dart';
 export '../entities/item_document_entity.dart';
 export '../entities/item_entity.dart';
 

@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
-import '../entities/service_log_entity.dart';
+import 'package:home_sync/features/service_logs/domain/entities/service_log_entity.dart';
 export '../entities/service_log_entity.dart';
 
 /// Abstract Repository Contract cho Service Logs & Thống kê tài chính dùng fpdart Either

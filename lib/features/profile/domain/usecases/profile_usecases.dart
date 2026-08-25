@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:home_sync/core/usecases/usecase.dart';
-import '../repositories/profile_repository.dart';
+import 'package:home_sync/features/profile/domain/repositories/profile_repository.dart';
 
 /// Use Case: Lấy thông tin tài khoản người dùng
 class GetProfileUseCase implements UseCase<ProfileEntity, NoParams> {

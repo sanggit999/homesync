@@ -1,5 +1,6 @@
-import '../../domain/entities/home_entity.dart';
-import '../../domain/entities/profile_entity.dart';
+import 'package:home_sync/features/profile/domain/entities/home_entity.dart';
+import 'package:home_sync/features/profile/domain/entities/home_member_entity.dart';
+import 'package:home_sync/features/profile/domain/entities/profile_entity.dart';
 
 /// Dart 3 Sealed Class cho Profile State
 sealed class ProfileState {

@@ -4,39 +4,38 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Features: Auth
-import '../../features/auth/data/repositories/auth_repository_impl.dart';
-import '../../features/auth/domain/repositories/auth_repository.dart';
-import '../../features/auth/domain/usecases/auth_usecases.dart';
-import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:home_sync/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:home_sync/features/auth/domain/repositories/auth_repository.dart';
+import 'package:home_sync/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:home_sync/features/auth/presentation/cubit/auth_cubit.dart';
 
 // Features: Items
-import '../../features/items/data/repositories/item_repository_impl.dart';
-import '../../features/items/domain/repositories/item_repository.dart';
-import '../../features/items/domain/usecases/item_usecases.dart';
-import '../../features/items/presentation/cubit/item_form_cubit.dart';
-import '../../features/items/presentation/cubit/item_list_cubit.dart';
+import 'package:home_sync/features/items/data/repositories/item_repository_impl.dart';
+import 'package:home_sync/features/items/domain/repositories/item_repository.dart';
+import 'package:home_sync/features/items/domain/usecases/item_usecases.dart';
+import 'package:home_sync/features/items/presentation/cubit/item_form_cubit.dart';
+import 'package:home_sync/features/items/presentation/cubit/item_list_cubit.dart';
 
 // Features: Maintenance
-import '../../features/maintenance/data/repositories/maintenance_repository_impl.dart';
-import '../../features/maintenance/domain/repositories/maintenance_repository.dart';
-import '../../features/maintenance/domain/usecases/maintenance_usecases.dart';
-import '../../features/maintenance/presentation/cubit/maintenance_cubit.dart';
+import 'package:home_sync/features/maintenance/data/repositories/maintenance_repository_impl.dart';
+import 'package:home_sync/features/maintenance/domain/repositories/maintenance_repository.dart';
+import 'package:home_sync/features/maintenance/presentation/cubit/maintenance_cubit.dart';
 
 // Features: Service Logs
-import '../../features/service_logs/data/repositories/service_log_repository_impl.dart';
-import '../../features/service_logs/domain/repositories/service_log_repository.dart';
-import '../../features/service_logs/domain/usecases/service_log_usecases.dart';
-import '../../features/service_logs/presentation/cubit/service_log_cubit.dart';
+import 'package:home_sync/features/service_logs/data/repositories/service_log_repository_impl.dart';
+import 'package:home_sync/features/service_logs/domain/repositories/service_log_repository.dart';
+import 'package:home_sync/features/service_logs/domain/usecases/service_log_usecases.dart';
+import 'package:home_sync/features/service_logs/presentation/cubit/service_log_cubit.dart';
 
 // Features: Profile
-import '../../features/profile/data/repositories/profile_repository_impl.dart';
-import '../../features/profile/domain/repositories/profile_repository.dart';
-import '../../features/profile/domain/usecases/profile_usecases.dart';
-import '../../features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:home_sync/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:home_sync/features/profile/domain/repositories/profile_repository.dart';
+import 'package:home_sync/features/profile/domain/usecases/profile_usecases.dart';
+import 'package:home_sync/features/profile/presentation/cubit/profile_cubit.dart';
 
 // Features: Dashboard
-import '../../features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
-import '../../features/dashboard/presentation/cubit/dashboard_cubit.dart';
+import 'package:home_sync/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
+import 'package:home_sync/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 
 final sl = GetIt.instance;
 

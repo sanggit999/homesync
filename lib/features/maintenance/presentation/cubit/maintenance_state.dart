@@ -1,5 +1,5 @@
-import '../../domain/entities/category_entity.dart';
-import '../../domain/entities/maintenance_task_entity.dart';
+import 'package:home_sync/features/maintenance/domain/entities/category_entity.dart';
+import 'package:home_sync/features/maintenance/domain/entities/maintenance_task_entity.dart';
 
 /// Dart 3 Sealed Class cho Maintenance State
 sealed class MaintenanceState {

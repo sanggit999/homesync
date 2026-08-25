@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/usecases/get_dashboard_summary_usecase.dart';
-import 'dashboard_state.dart';
+import 'package:home_sync/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
+import 'package:home_sync/features/dashboard/presentation/cubit/dashboard_state.dart';
 
 export 'dashboard_state.dart';
 

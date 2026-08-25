@@ -2,7 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:home_sync/core/usecases/usecase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../repositories/auth_repository.dart';
+import 'package:home_sync/features/auth/domain/repositories/auth_repository.dart';
 
 /// Use Case: Đăng nhập ẩn danh (Guest Mode)
 class SignInAnonymouslyUseCase implements UseCase<AuthUserEntity, NoParams> {

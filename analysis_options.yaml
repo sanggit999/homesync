@@ -12,5 +12,4 @@ analyzer:
 
 linter:
   rules:
-    # avoid_print: false
-    # prefer_single_quotes: true
+    - always_use_package_imports

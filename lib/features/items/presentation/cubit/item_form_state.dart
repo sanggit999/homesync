@@ -1,4 +1,4 @@
-import '../../domain/entities/item_entity.dart';
+import 'package:home_sync/features/items/domain/entities/item_entity.dart';
 
 /// Dart 3 Sealed Class cho ItemForm State
 sealed class ItemFormState {

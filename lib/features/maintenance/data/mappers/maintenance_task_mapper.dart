@@ -1,5 +1,5 @@
-import '../../domain/entities/maintenance_task_entity.dart';
-import '../models/maintenance_task_model.dart';
+import 'package:home_sync/features/maintenance/domain/entities/maintenance_task_entity.dart';
+import 'package:home_sync/features/maintenance/data/models/maintenance_task_model.dart';
 
 /// Bộ chuyển đổi 2 chiều giữa MaintenanceTaskModel và MaintenanceTaskEntity
 class MaintenanceTaskMapper {

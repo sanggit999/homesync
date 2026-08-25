@@ -1,7 +1,7 @@
-import '../../domain/entities/item_document_entity.dart';
-import '../../domain/entities/item_entity.dart';
-import '../models/item_document_model.dart';
-import '../models/item_model.dart';
+import 'package:home_sync/features/items/domain/entities/item_document_entity.dart';
+import 'package:home_sync/features/items/domain/entities/item_entity.dart';
+import 'package:home_sync/features/items/data/models/item_document_model.dart';
+import 'package:home_sync/features/items/data/models/item_model.dart';
 
 /// Bộ chuyển đổi 2 chiều giữa ItemModel / ItemDocumentModel và ItemEntity / ItemDocumentEntity
 class ItemMapper {
