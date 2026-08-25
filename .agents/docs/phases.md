@@ -210,9 +210,9 @@ Kiểm tra toàn diện trước khi bàn giao theo nguyên tắc **Verification
 
 | Giai đoạn | Nội dung cốt lõi | Trạng thái |
 | :--- | :--- | :--- |
-| **Phase 1** | Dependencies, Pubspec & Build Runner Setup | 🟡 Sẵn sàng thực hiện |
-| **Phase 2** | Design Tokens, Theme M3, Core Services (PDF, Calendar, Storage) | ⚪ Chờ Phase 1 |
-| **Phase 3** | TDD Domain Logic, Freezed Models & Mappers | ⚪ Chờ Phase 2 |
+| **Phase 1** | Dependencies, Pubspec & Build Runner Setup | 🟢 Hoàn thành |
+| **Phase 2** | Design Tokens, Theme M3, Core Services (PDF, Calendar, Storage) | 🟢 Hoàn thành |
+| **Phase 3** | TDD Domain Logic, Freezed Models & Mappers | 🟡 Sẵn sàng thực hiện |
 | **Phase 4** | Repositories Implementation & Cubit State Machines | ⚪ Chờ Phase 3 |
 | **Phase 5** | UI Screens (Minimalist Apple-like) & 5 Tính Năng Cốt Lõi | ⚪ Chờ Phase 4 |
 | **Phase 6** | Full Test Suite, Security Audit & Verification Gate | ⚪ Chờ Phase 5 |
