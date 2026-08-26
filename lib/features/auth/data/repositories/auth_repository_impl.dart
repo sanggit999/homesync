@@ -4,7 +4,6 @@ import 'package:fpdart/fpdart.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:home_sync/core/config/app_config.dart';
 import 'package:home_sync/features/auth/domain/repositories/auth_repository.dart';
 
 /// Mã lỗi chuẩn của Google Sign-In SDK & Google Play Services
@@ -27,10 +26,7 @@ class AuthRemoteDataSource {
     SupabaseClient? client,
     GoogleSignIn? googleSignIn,
   })  : _client = client ?? Supabase.instance.client,
-        _googleSignIn = googleSignIn ??
-            GoogleSignIn(
-              serverClientId: AppConfig.googleWebClientId,
-            );
+        _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
 
   final SupabaseClient _client;
   final GoogleSignIn _googleSignIn;
