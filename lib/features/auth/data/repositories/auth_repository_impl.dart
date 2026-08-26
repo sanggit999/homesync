@@ -1,10 +1,25 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:home_sync/core/config/app_config.dart';
 import 'package:home_sync/features/auth/domain/repositories/auth_repository.dart';
+
+/// Mã lỗi chuẩn của Google Sign-In SDK & Google Play Services
+abstract final class GoogleAuthErrorCodes {
+  static const String canceled = 'sign_in_canceled';
+  static const String androidCanceledCode = '12501';
+  static const String networkError = 'network_error';
+  static const String apiNotConnected = '17';
+}
+
+/// Mã lỗi chuẩn từ Supabase Auth API
+abstract final class SupabaseAuthStatusCodes {
+  static const String unprocessableEntity = '422';
+  static const String anonymousDisabled = 'anonymous_provider_disabled';
+}
 
 /// Remote Data Source xử lý giao tiếp Supabase Auth & Google Sign-In SDK
 class AuthRemoteDataSource {
@@ -25,14 +40,9 @@ class AuthRemoteDataSource {
   }
 
   Future<AuthResponse> signInWithGoogle() async {
-    final googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) {
-      throw const AuthException('Đã hủy đăng nhập Google.');
-    }
-
-    final googleAuth = await googleUser.authentication;
+    final googleUser = await _googleSignIn.authenticate();
+    final googleAuth = googleUser.authentication;
     final idToken = googleAuth.idToken;
-    final accessToken = googleAuth.accessToken;
 
     if (idToken == null) {
       throw const AuthException('Không nhận được ID Token từ Google.');
@@ -41,19 +51,13 @@ class AuthRemoteDataSource {
     return _client.auth.signInWithIdToken(
       provider: OAuthProvider.google,
       idToken: idToken,
-      accessToken: accessToken,
     );
   }
 
   Future<AuthResponse> linkWithGoogle() async {
-    final googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) {
-      throw const AuthException('Đã hủy liên kết tài khoản Google.');
-    }
-
-    final googleAuth = await googleUser.authentication;
+    final googleUser = await _googleSignIn.authenticate();
+    final googleAuth = googleUser.authentication;
     final idToken = googleAuth.idToken;
-    final accessToken = googleAuth.accessToken;
 
     if (idToken == null) {
       throw const AuthException('Không nhận được ID Token từ Google.');
@@ -62,7 +66,6 @@ class AuthRemoteDataSource {
     return _client.auth.signInWithIdToken(
       provider: OAuthProvider.google,
       idToken: idToken,
-      accessToken: accessToken,
     );
   }
 
@@ -99,15 +102,30 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await _remoteDataSource.signInWithGoogle();
       final user = response.user;
       if (user == null) {
-        debugPrint('[HomeSync Auth] Đăng nhập Google thành công nhưng không lấy được User từ response.');
+        debugPrint('[HomeSync Auth] Đăng nhập Google thành công nhưng không lấy được User.');
         return const Left(AuthFailure('Không lấy được thông tin người dùng từ Google.'));
       }
-      debugPrint('[HomeSync Auth] Đăng nhập Google thành công! User ID: ${user.id}, Email: ${user.email}');
+      debugPrint('[HomeSync Auth] Đăng nhập Google thành công! User ID: ${user.id}');
       return Right(_toEntity(user));
+    } on GoogleSignInException catch (e) {
+      debugPrint('[HomeSync Auth] Lỗi GoogleSignInException khi đăng nhập: ${e.code} - ${e.description}');
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        return const Left(AuthCanceledFailure('Đã hủy đăng nhập Google.'));
+      }
+      return Left(AuthFailure(e.description ?? 'Đăng nhập Google thất bại.'));
+    } on PlatformException catch (e) {
+      debugPrint('[HomeSync Auth] Lỗi PlatformException khi đăng nhập Google: ${e.code} - ${e.message}');
+      if (e.code == GoogleAuthErrorCodes.canceled ||
+          e.code == GoogleAuthErrorCodes.androidCanceledCode) {
+        return const Left(AuthCanceledFailure('Đã hủy đăng nhập Google.'));
+      }
+      return Left(AuthFailure(e.message ?? 'Đăng nhập Google thất bại.'));
+    } on AuthException catch (e) {
+      debugPrint('[HomeSync Auth] Lỗi Supabase AuthException: [${e.statusCode}] ${e.message}');
+      return Left(AuthFailure(e.message));
     } catch (e) {
-      debugPrint('[HomeSync Auth] LỖI Đăng nhập Google: $e');
-      debugPrint('[HomeSync Auth] GỢI Ý: Lỗi đăng nhập Google trên Android debug thường do: \n1. Chưa khai báo mã băm SHA-1/SHA-256 từ keystore debug vào Google Cloud Console hoặc Supabase Dashboard.\n2. Thiết bị chạy thiếu Google Play Services.');
-      return Left(AuthFailure(e.toString()));
+      debugPrint('[HomeSync Auth] Lỗi không xác định khi đăng nhập Google: $e');
+      return const Left(AuthFailure('Đã xảy ra lỗi khi đăng nhập Google.'));
     }
   }
 
@@ -123,12 +141,16 @@ class AuthRepositoryImpl implements AuthRepository {
       }
       debugPrint('[HomeSync Auth] Đăng nhập ẩn danh thành công! User ID: ${user.id}');
       return Right(_toEntity(user));
-    } catch (e) {
-      debugPrint('[HomeSync Auth] LỖI đăng nhập ẩn danh: $e');
-      if (e.toString().contains('422')) {
-        debugPrint('[HomeSync Auth] GỢI Ý: Lỗi 422 thường do chưa BẬT "Anonymous Sign-In" trong Dashboard Supabase -> Authentication -> Providers -> Anonymous!');
+    } on AuthException catch (e) {
+      debugPrint('[HomeSync Auth] Lỗi Supabase AuthException: [${e.statusCode}] ${e.message}');
+      if (e.statusCode == SupabaseAuthStatusCodes.unprocessableEntity ||
+          e.code == SupabaseAuthStatusCodes.anonymousDisabled) {
+        debugPrint('[HomeSync Auth] GỢI Ý: Lỗi 422 do chưa BẬT "Anonymous Sign-In" trên Supabase Dashboard!');
       }
-      return Left(AuthFailure(e.toString()));
+      return Left(AuthFailure(e.message));
+    } catch (e) {
+      debugPrint('[HomeSync Auth] Lỗi không xác định khi đăng nhập ẩn danh: $e');
+      return const Left(AuthFailure('Không thể kết nối phiên dùng thử.'));
     }
   }
 
@@ -142,11 +164,27 @@ class AuthRepositoryImpl implements AuthRepository {
         debugPrint('[HomeSync Auth] Liên kết Google thành công nhưng User nhận được là null.');
         return const Left(AuthFailure('Không thể liên kết tài khoản Google.'));
       }
-      debugPrint('[HomeSync Auth] Liên kết Google thành công! Tài khoản đã được nâng cấp lên Google Auth. User ID: ${user.id}');
+      debugPrint('[HomeSync Auth] Liên kết Google thành công! User ID: ${user.id}');
       return Right(_toEntity(user));
+    } on GoogleSignInException catch (e) {
+      debugPrint('[HomeSync Auth] Lỗi GoogleSignInException khi liên kết: ${e.code} - ${e.description}');
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        return const Left(AuthCanceledFailure('Đã hủy thao tác liên kết.'));
+      }
+      return Left(AuthFailure(e.description ?? 'Liên kết tài khoản Google thất bại.'));
+    } on PlatformException catch (e) {
+      debugPrint('[HomeSync Auth] Lỗi PlatformException khi liên kết Google: ${e.code} - ${e.message}');
+      if (e.code == GoogleAuthErrorCodes.canceled ||
+          e.code == GoogleAuthErrorCodes.androidCanceledCode) {
+        return const Left(AuthCanceledFailure('Đã hủy thao tác liên kết.'));
+      }
+      return Left(AuthFailure(e.message ?? 'Liên kết tài khoản Google thất bại.'));
+    } on AuthException catch (e) {
+      debugPrint('[HomeSync Auth] Lỗi Supabase AuthException: [${e.statusCode}] ${e.message}');
+      return Left(AuthFailure(e.message));
     } catch (e) {
-      debugPrint('[HomeSync Auth] LỖI Liên kết Google: $e');
-      return Left(AuthFailure(e.toString()));
+      debugPrint('[HomeSync Auth] Lỗi không xác định khi liên kết Google: $e');
+      return const Left(AuthFailure('Đã xảy ra sự cố khi liên kết tài khoản Google.'));
     }
   }
 

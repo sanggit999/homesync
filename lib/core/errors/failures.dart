@@ -17,6 +17,11 @@ class AuthFailure extends Failure {
   const AuthFailure([super.message = 'Lỗi xác thực người dùng.']);
 }
 
+/// Người dùng chủ động hủy thao tác xác thực (Google / Apple Sign In)
+class AuthCanceledFailure extends AuthFailure {
+  const AuthCanceledFailure([super.message = 'Đã hủy thao tác liên kết.']);
+}
+
 /// Lỗi truy xuất bộ nhớ cục bộ / Caching
 class CacheFailure extends Failure {
   const CacheFailure([super.message = 'Lỗi truy xuất bộ nhớ đệm.']);

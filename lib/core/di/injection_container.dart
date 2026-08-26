@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:home_sync/core/config/app_config.dart';
 
 // Features: Auth
 import 'package:home_sync/features/auth/data/repositories/auth_repository_impl.dart';
@@ -47,7 +48,10 @@ Future<void> initDependencies() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
 
-  sl.registerLazySingleton<GoogleSignIn>(() => GoogleSignIn());
+  await GoogleSignIn.instance.initialize(
+    serverClientId: AppConfig.googleWebClientId,
+  );
+  sl.registerLazySingleton<GoogleSignIn>(() => GoogleSignIn.instance);
   sl.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
 
   // ==========================================
