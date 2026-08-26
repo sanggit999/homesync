@@ -5,6 +5,7 @@ import 'package:home_sync/core/config/app_config.dart';
 import 'package:home_sync/core/di/injection_container.dart';
 import 'package:home_sync/core/router/app_router.dart';
 import 'package:home_sync/core/theme/app_theme.dart';
+import 'package:home_sync/core/utils/snackbar_utils.dart';
 import 'package:home_sync/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:home_sync/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:home_sync/features/items/presentation/cubit/item_form_cubit.dart';
@@ -67,6 +68,7 @@ class HomeSyncApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: AppConfig.appName,
+        scaffoldMessengerKey: AppSnackBar.messengerKey,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,

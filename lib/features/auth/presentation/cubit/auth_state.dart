@@ -28,6 +28,15 @@ final class Unauthenticated extends AuthState {
 }
 
 final class AuthFailureState extends AuthState {
-  const AuthFailureState(this.message);
+  const AuthFailureState(
+    this.message, {
+    this.user,
+    this.isAnonymous = false,
+    this.isCanceled = false,
+  });
+
   final String message;
+  final AuthUserEntity? user;
+  final bool isAnonymous;
+  final bool isCanceled;
 }

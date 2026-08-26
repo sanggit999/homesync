@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:home_sync/core/constants/app_colors.dart';
 import 'package:home_sync/core/router/app_routes.dart';
+import 'package:home_sync/core/utils/snackbar_utils.dart';
 import 'package:home_sync/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:home_sync/features/auth/presentation/widgets/auth_hero_logo.dart';
 
@@ -20,13 +21,7 @@ class AuthWelcomePage extends StatelessWidget {
         if (state is Authenticated) {
           context.go(AppRoutes.home);
         } else if (state is AuthFailureState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: AppColors.error,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          AppSnackBar.showError(context, state.message);
         }
       },
       builder: (context, state) {

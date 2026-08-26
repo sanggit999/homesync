@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:home_sync/core/errors/failures.dart';
 import 'package:home_sync/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:home_sync/features/auth/presentation/cubit/auth_state.dart';
 
@@ -61,7 +62,10 @@ class AuthCubit extends Cubit<AuthState> {
     result.fold(
       (failure) {
         debugPrint('[HOMESYNC DEBUG] Đăng nhập Google LỖI: ${failure.message}');
-        emit(AuthFailureState(failure.message));
+        emit(AuthFailureState(
+          failure.message,
+          isCanceled: failure is AuthCanceledFailure,
+        ));
       },
       (user) {
         debugPrint('[HOMESYNC DEBUG] Đăng nhập Google THÀNH CÔNG. User ID: ${user.id}');
@@ -72,11 +76,31 @@ class AuthCubit extends Cubit<AuthState> {
 
   /// Liên kết tài khoản Guest với Google để lưu trữ đám mây
   Future<void> linkWithGoogle() async {
+    final currentUser = getCurrentUserUseCase();
     emit(const AuthLoading());
     final result = await linkWithGoogleUseCase();
     result.fold(
-      (failure) => emit(AuthFailureState(failure.message)),
-      (user) => emit(Authenticated(user: user, isAnonymous: false)),
+      (failure) {
+        debugPrint('[HOMESYNC DEBUG] Liên kết Google THẤT BẠI: ${failure.message}');
+        final isCanceled = failure is AuthCanceledFailure;
+        if (currentUser != null) {
+          emit(AuthFailureState(
+            failure.message,
+            user: currentUser,
+            isAnonymous: currentUser.isAnonymous,
+            isCanceled: isCanceled,
+          ));
+        } else {
+          emit(AuthFailureState(
+            failure.message,
+            isCanceled: isCanceled,
+          ));
+        }
+      },
+      (user) {
+        debugPrint('[HOMESYNC DEBUG] Liên kết Google THÀNH CÔNG. User ID: ${user.id}');
+        emit(Authenticated(user: user, isAnonymous: false));
+      },
     );
   }
 
