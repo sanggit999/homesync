@@ -31,17 +31,23 @@ class _ProfilePageState extends State<ProfilePage> {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, authState) {
         if (authState is AuthFailureState) {
-          AppSnackBar.showError(
-            context,
-            authState.message,
-            duration: Duration(seconds: authState.isCanceled ? 2 : 3),
-          );
+          if (authState.isAccountAlreadyExists) {
+            _showAccountConflictDialog(context, authState.message);
+          } else {
+            AppSnackBar.showError(
+              context,
+              authState.message,
+              duration: Duration(seconds: authState.isCanceled ? 2 : 3),
+            );
+          }
         } else if (authState is Authenticated && !authState.isAnonymous) {
           context.read<ProfileCubit>().loadProfileData();
-          AppSnackBar.showSuccess(
-            context,
-            'Bạn đã liên kết Google thành công',
-          );
+          if (authState.message != null && authState.message!.isNotEmpty) {
+            AppSnackBar.showSuccess(
+              context,
+              authState.message!,
+            );
+          }
         }
       },
       builder: (context, authState) {
@@ -287,6 +293,49 @@ class _ProfilePageState extends State<ProfilePage> {
               foregroundColor: Colors.white,
             ),
             child: Text(isAnonymous ? 'Vẫn đăng xuất (Xóa hết)' : 'Đăng xuất'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAccountConflictDialog(BuildContext context, String message) {
+    showAppDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(LucideIcons.userCheck, color: AppColors.primary, size: 24),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Tài khoản đã tồn tại',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          '$message\n\nBạn có muốn đăng nhập bằng tài khoản này để tiếp tục sử dụng không?',
+          style: const TextStyle(height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Tiếp tục dùng thử'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              context.read<AuthCubit>().signInWithGoogle();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Đăng nhập'),
           ),
         ],
       ),

@@ -22,6 +22,16 @@ class AuthCanceledFailure extends AuthFailure {
   const AuthCanceledFailure([super.message = 'Đã hủy thao tác liên kết.']);
 }
 
+/// Tài khoản Google đã được liên kết với một người dùng khác trước đó (Identity Conflict)
+class AuthAccountAlreadyExistsFailure extends AuthFailure {
+  const AuthAccountAlreadyExistsFailure([
+    super.message = 'Tài khoản Google này đã tồn tại trên hệ thống.',
+    this.email,
+  ]);
+
+  final String? email;
+}
+
 /// Lỗi truy xuất bộ nhớ cục bộ / Caching
 class CacheFailure extends Failure {
   const CacheFailure([super.message = 'Lỗi truy xuất bộ nhớ đệm.']);
