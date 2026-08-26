@@ -69,7 +69,11 @@ class AuthCubit extends Cubit<AuthState> {
       },
       (user) {
         debugPrint('[HOMESYNC DEBUG] Đăng nhập Google THÀNH CÔNG. User ID: ${user.id}');
-        emit(Authenticated(user: user, isAnonymous: false));
+        emit(Authenticated(
+          user: user,
+          isAnonymous: false,
+          message: 'Đăng nhập Google thành công',
+        ));
       },
     );
   }
@@ -83,23 +87,35 @@ class AuthCubit extends Cubit<AuthState> {
       (failure) {
         debugPrint('[HOMESYNC DEBUG] Liên kết Google THẤT BẠI: ${failure.message}');
         final isCanceled = failure is AuthCanceledFailure;
-        if (currentUser != null) {
+        final isAccountAlreadyExists = failure is AuthAccountAlreadyExistsFailure;
+        final conflictEmail = failure is AuthAccountAlreadyExistsFailure ? failure.email : null;
+        final activeUser = getCurrentUserUseCase() ?? currentUser;
+
+        if (activeUser != null) {
           emit(AuthFailureState(
             failure.message,
-            user: currentUser,
-            isAnonymous: currentUser.isAnonymous,
+            user: activeUser,
+            isAnonymous: activeUser.isAnonymous,
             isCanceled: isCanceled,
+            isAccountAlreadyExists: isAccountAlreadyExists,
+            conflictEmail: conflictEmail,
           ));
         } else {
           emit(AuthFailureState(
             failure.message,
             isCanceled: isCanceled,
+            isAccountAlreadyExists: isAccountAlreadyExists,
+            conflictEmail: conflictEmail,
           ));
         }
       },
       (user) {
         debugPrint('[HOMESYNC DEBUG] Liên kết Google THÀNH CÔNG. User ID: ${user.id}');
-        emit(Authenticated(user: user, isAnonymous: false));
+        emit(Authenticated(
+          user: user,
+          isAnonymous: false,
+          message: 'Bạn đã liên kết Google thành công',
+        ));
       },
     );
   }

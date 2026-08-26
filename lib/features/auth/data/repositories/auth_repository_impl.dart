@@ -18,6 +18,9 @@ abstract final class GoogleAuthErrorCodes {
 abstract final class SupabaseAuthStatusCodes {
   static const String unprocessableEntity = '422';
   static const String anonymousDisabled = 'anonymous_provider_disabled';
+  static const String identityAlreadyExists = 'identity_already_exists';
+  static const String userAlreadyExists = 'user_already_exists';
+  static const String emailExists = 'email_exists';
 }
 
 /// Remote Data Source xử lý giao tiếp Supabase Auth & Google Sign-In SDK
@@ -153,6 +156,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, AuthUserEntity>> linkWithGoogle() async {
     try {
+      final previousUser = _remoteDataSource.currentUser;
+      final wasAnonymous = previousUser?.isAnonymous ?? false;
+      final previousUserId = previousUser?.id;
+
       debugPrint('[HomeSync Auth] Đang bắt đầu liên kết tài khoản ẩn danh hiện tại với Google...');
       final response = await _remoteDataSource.linkWithGoogle();
       final user = response.user;
@@ -160,6 +167,21 @@ class AuthRepositoryImpl implements AuthRepository {
         debugPrint('[HomeSync Auth] Liên kết Google thành công nhưng User nhận được là null.');
         return const Left(AuthFailure('Không thể liên kết tài khoản Google.'));
       }
+
+      // Kiểm tra xung đột: Nếu là Guest nhưng Google ID trả về thuộc User cũ
+      if (wasAnonymous && previousUserId != null && user.id != previousUserId) {
+        debugPrint('[HomeSync Auth] Phát hiện Google (${user.email}) ĐÃ TỒN TẠI trước đó (ID: ${user.id} != Guest: $previousUserId)');
+        
+        // Khôi phục lại phiên Guest để chờ xác nhận từ người dùng
+        await _remoteDataSource.signOut();
+        await _remoteDataSource.signInAnonymously();
+
+        return Left(AuthAccountAlreadyExistsFailure(
+          'Tài khoản Google này đã tồn tại trên hệ thống.',
+          user.email,
+        ));
+      }
+
       debugPrint('[HomeSync Auth] Liên kết Google thành công! User ID: ${user.id}');
       return Right(_toEntity(user));
     } on GoogleSignInException catch (e) {
@@ -176,7 +198,15 @@ class AuthRepositoryImpl implements AuthRepository {
       }
       return Left(AuthFailure(e.message ?? 'Liên kết tài khoản Google thất bại.'));
     } on AuthException catch (e) {
-      debugPrint('[HomeSync Auth] Lỗi Supabase AuthException: [${e.statusCode}] ${e.message}');
+      debugPrint('[HomeSync Auth] Lỗi Supabase AuthException: [${e.statusCode}] (${e.code}) ${e.message}');
+      if (e.code == SupabaseAuthStatusCodes.identityAlreadyExists ||
+          e.code == SupabaseAuthStatusCodes.userAlreadyExists ||
+          e.code == SupabaseAuthStatusCodes.emailExists ||
+          e.statusCode == SupabaseAuthStatusCodes.unprocessableEntity) {
+        return const Left(AuthAccountAlreadyExistsFailure(
+          'Tài khoản Google này đã được liên kết với một người dùng khác.',
+        ));
+      }
       return Left(AuthFailure(e.message));
     } catch (e) {
       debugPrint('[HomeSync Auth] Lỗi không xác định khi liên kết Google: $e');
