@@ -83,4 +83,23 @@ class ItemEntity {
 
   /// Thiết bị đã hết hạn bảo hành
   bool get isExpired => warrantyStatus == WarrantyStatus.expired;
+
+  /// Kiểm tra thiết bị có khớp với từ khóa tìm kiếm hay không
+  bool matchesSearch(String query) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return true;
+
+    final searchableFields = [
+      name,
+      brand,
+      modelNumber,
+      serialNumber,
+      location,
+      storeName,
+      categoryName,
+      ...tags,
+    ];
+
+    return searchableFields.any((field) => field != null && field.toLowerCase().contains(q));
+  }
 }

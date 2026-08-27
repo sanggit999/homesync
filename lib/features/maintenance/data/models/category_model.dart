@@ -10,6 +10,7 @@ abstract class CategoryModel with _$CategoryModel {
     required String id,
     required String name,
     @JsonKey(name: 'icon_name') required String iconName,
+    @JsonKey(name: 'user_id') String? userId,
     @JsonKey(name: 'created_at') DateTime? createdAt,
   }) = _CategoryModel;
 

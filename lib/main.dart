@@ -12,16 +12,20 @@ import 'package:home_sync/features/items/presentation/cubit/item_form_cubit.dart
 import 'package:home_sync/features/items/presentation/cubit/item_list_cubit.dart';
 import 'package:home_sync/features/maintenance/presentation/cubit/maintenance_cubit.dart';
 import 'package:home_sync/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:home_sync/core/services/in_memory_local_storage.dart';
 import 'package:home_sync/features/service_logs/presentation/cubit/service_log_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Khởi tạo Supabase client
+  // Khởi tạo Supabase client với cơ chế Bảo Mật RAM-ONLY (Không ghi Token xuống Disk)
   try {
     await Supabase.initialize(
       url: AppConfig.supabaseUrl,
       publishableKey: AppConfig.supabaseAnonKey,
+      authOptions: FlutterAuthClientOptions(
+        localStorage: InMemoryLocalStorage(),
+      ),
     );
   } catch (e) {
     debugPrint('Supabase init notice: $e');

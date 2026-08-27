@@ -3,9 +3,10 @@ import 'package:home_sync/core/errors/failures.dart';
 import 'package:home_sync/features/maintenance/domain/entities/category_entity.dart';
 import 'package:home_sync/features/maintenance/domain/entities/maintenance_task_entity.dart';
 export '../entities/category_entity.dart';
+export '../entities/maintenance_preset_entity.dart';
 export '../entities/maintenance_task_entity.dart';
 
-/// Abstract Repository Contract cho Lịch Bảo Trì & Presets dùng fpdart Either
+/// Abstract Repository Contract cho Lịch Bảo Trì & Presets & Categories dùng fpdart Either
 abstract class MaintenanceRepository {
   Future<Either<Failure, List<MaintenanceTaskEntity>>> getTasks({String? itemId, bool? isCompleted});
   Future<Either<Failure, MaintenanceTaskEntity>> addTask(MaintenanceTaskEntity task);
