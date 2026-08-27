@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -94,7 +95,11 @@ class ItemRepositoryImpl implements ItemRepository {
         query: query,
       );
       return Right(models.map(ItemMapper.toEntity).toList());
+    } on PostgrestException catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - ITEMS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
+      return Left(ServerFailure('[${e.code}] ${e.message}'));
     } catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - ITEMS] Lỗi không xác định: $e');
       return Left(ServerFailure(e.toString()));
     }
   }

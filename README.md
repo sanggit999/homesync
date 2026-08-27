@@ -175,6 +175,13 @@ flutter analyze
 
 ---
 
+## 🗺️ Lộ trình phát triển & Lưu ý vận hành (Roadmap & Production Notes)
+
+Xem chi tiết tài liệu kỹ thuật về các lưu ý vận hành, cấu hình bảo mật nâng cao và kế hoạch phát triển các Phase tiếp theo tại:
+👉 **[ROADMAP_AND_NOTES.md](file:///D:/Flutter/homesync/ROADMAP_AND_NOTES.md)**
+
+---
+
 ## 📄 Bản quyền (License)
 
 Dự án được phân phối dưới giấy phép **MIT License**.

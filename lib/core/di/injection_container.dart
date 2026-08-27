@@ -35,6 +35,8 @@ import 'package:home_sync/features/profile/domain/usecases/profile_usecases.dart
 import 'package:home_sync/features/profile/presentation/cubit/profile_cubit.dart';
 
 // Features: Dashboard
+import 'package:home_sync/features/dashboard/data/repositories/dashboard_repository_impl.dart';
+import 'package:home_sync/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:home_sync/features/dashboard/domain/usecases/get_dashboard_summary_usecase.dart';
 import 'package:home_sync/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 
@@ -107,6 +109,14 @@ Future<void> initDependencies() async {
     () => ProfileRepositoryImpl(remoteDataSource: sl<ProfileRemoteDataSource>()),
   );
 
+  sl.registerLazySingleton<DashboardRepository>(
+    () => DashboardRepositoryImpl(
+      itemRepository: sl<ItemRepository>(),
+      maintenanceRepository: sl<MaintenanceRepository>(),
+      serviceLogRepository: sl<ServiceLogRepository>(),
+    ),
+  );
+
   // ==========================================
   // 4. USE CASES
   // ==========================================
@@ -139,7 +149,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => GetCategoriesUseCase(sl<MaintenanceRepository>()));
   sl.registerLazySingleton(() => GetPresetsByCategoryUseCase(sl<MaintenanceRepository>()));
 
-  // Service Logs Use Cases
+  // Service Log Use Cases
   sl.registerLazySingleton(() => GetServiceLogsUseCase(sl<ServiceLogRepository>()));
   sl.registerLazySingleton(() => AddServiceLogUseCase(sl<ServiceLogRepository>()));
   sl.registerLazySingleton(() => DeleteServiceLogUseCase(sl<ServiceLogRepository>()));
@@ -157,9 +167,7 @@ Future<void> initDependencies() async {
   // Dashboard Use Case
   sl.registerLazySingleton(
     () => GetDashboardSummaryUseCase(
-      itemRepository: sl<ItemRepository>(),
-      maintenanceRepository: sl<MaintenanceRepository>(),
-      serviceLogRepository: sl<ServiceLogRepository>(),
+      dashboardRepository: sl<DashboardRepository>(),
     ),
   );
 

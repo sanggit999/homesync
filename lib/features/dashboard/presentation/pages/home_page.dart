@@ -26,6 +26,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    debugPrint('[HOMESYNC UI] 📱 Mở màn hình Tổng quan (HomePage) -> Kích hoạt loadDashboard()');
     context.read<DashboardCubit>().loadDashboard();
   }
 
