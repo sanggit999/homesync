@@ -29,7 +29,15 @@ class ItemsRemoteDataSource {
 
     final response = await request.order('created_at', ascending: false);
     final list = response as List<dynamic>;
-    return list.map((json) => ItemModel.fromJson(json as Map<String, dynamic>)).toList();
+    return list.map((itemJson) {
+      final map = Map<String, dynamic>.from(itemJson as Map<String, dynamic>);
+      if (map['categories'] != null && map['categories'] is Map) {
+        final cat = map['categories'] as Map<String, dynamic>;
+        map['category_name'] = cat['name'];
+        map['category_icon'] = cat['icon_name'];
+      }
+      return ItemModel.fromJson(map);
+    }).toList();
   }
 
   Future<ItemModel> getItemById(String id) async {
@@ -38,18 +46,28 @@ class ItemsRemoteDataSource {
         .select('*, categories(name, icon_name)')
         .eq('id', id)
         .single();
-    return ItemModel.fromJson(response);
+    final map = Map<String, dynamic>.from(response);
+    if (map['categories'] != null && map['categories'] is Map) {
+      final cat = map['categories'] as Map<String, dynamic>;
+      map['category_name'] = cat['name'];
+      map['category_icon'] = cat['icon_name'];
+    }
+    return ItemModel.fromJson(map);
   }
 
   Future<ItemModel> addItem(ItemModel item) async {
     final data = item.toJson();
     data.remove('id'); // Tự sinh trên Supabase
+    data.remove('category_name');
+    data.remove('category_icon');
     final response = await _client.from('items').insert(data).select('*, categories(name, icon_name)').single();
     return ItemModel.fromJson(response);
   }
 
   Future<ItemModel> updateItem(ItemModel item) async {
     final data = item.toJson();
+    data.remove('category_name');
+    data.remove('category_icon');
     final response = await _client.from('items').update(data).eq('id', item.id).select('*, categories(name, icon_name)').single();
     return ItemModel.fromJson(response);
   }

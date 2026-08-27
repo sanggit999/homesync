@@ -194,6 +194,7 @@ Future<void> initDependencies() async {
   sl.registerFactory(
     () => ItemListCubit(
       getItemsUseCase: sl<GetItemsUseCase>(),
+      getCategoriesUseCase: sl<GetCategoriesUseCase>(),
       toggleFavoriteUseCase: sl<ToggleFavoriteUseCase>(),
     ),
   );

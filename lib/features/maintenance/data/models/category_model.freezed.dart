@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CategoryModel {
 
- String get id; String get name;@JsonKey(name: 'icon_name') String get iconName;@JsonKey(name: 'created_at') DateTime? get createdAt;
+ String get id; String get name;@JsonKey(name: 'icon_name') String get iconName;@JsonKey(name: 'user_id') String? get userId;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of CategoryModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $CategoryModelCopyWith<CategoryModel> get copyWith => _$CategoryModelCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategoryModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.iconName, iconName) || other.iconName == iconName)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CategoryModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.iconName, iconName) || other.iconName == iconName)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,iconName,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,iconName,userId,createdAt);
 
 @override
 String toString() {
-  return 'CategoryModel(id: $id, name: $name, iconName: $iconName, createdAt: $createdAt)';
+  return 'CategoryModel(id: $id, name: $name, iconName: $iconName, userId: $userId, createdAt: $createdAt)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $CategoryModelCopyWith<$Res>  {
   factory $CategoryModelCopyWith(CategoryModel value, $Res Function(CategoryModel) _then) = _$CategoryModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String name,@JsonKey(name: 'icon_name') String iconName,@JsonKey(name: 'created_at') DateTime? createdAt
+ String id, String name,@JsonKey(name: 'icon_name') String iconName,@JsonKey(name: 'user_id') String? userId,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -66,12 +66,13 @@ class _$CategoryModelCopyWithImpl<$Res>
 
 /// Create a copy of CategoryModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? iconName = null,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? iconName = null,Object? userId = freezed,Object? createdAt = freezed,}) {
   return _then(CategoryModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,iconName: null == iconName ? _self.iconName : iconName // ignore: cast_nullable_to_non_nullable
-as String,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }
@@ -157,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name, @JsonKey(name: 'icon_name')  String iconName, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name, @JsonKey(name: 'icon_name')  String iconName, @JsonKey(name: 'user_id')  String? userId, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CategoryModel() when $default != null:
-return $default(_that.id,_that.name,_that.iconName,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.iconName,_that.userId,_that.createdAt);case _:
   return orElse();
 
 }
@@ -178,10 +179,10 @@ return $default(_that.id,_that.name,_that.iconName,_that.createdAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name, @JsonKey(name: 'icon_name')  String iconName, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name, @JsonKey(name: 'icon_name')  String iconName, @JsonKey(name: 'user_id')  String? userId, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _CategoryModel():
-return $default(_that.id,_that.name,_that.iconName,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.iconName,_that.userId,_that.createdAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +199,10 @@ return $default(_that.id,_that.name,_that.iconName,_that.createdAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name, @JsonKey(name: 'icon_name')  String iconName, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name, @JsonKey(name: 'icon_name')  String iconName, @JsonKey(name: 'user_id')  String? userId, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _CategoryModel() when $default != null:
-return $default(_that.id,_that.name,_that.iconName,_that.createdAt);case _:
+return $default(_that.id,_that.name,_that.iconName,_that.userId,_that.createdAt);case _:
   return null;
 
 }
@@ -213,12 +214,13 @@ return $default(_that.id,_that.name,_that.iconName,_that.createdAt);case _:
 @JsonSerializable()
 
 class _CategoryModel implements CategoryModel {
-  const _CategoryModel({required this.id, required this.name, @JsonKey(name: 'icon_name') required this.iconName, @JsonKey(name: 'created_at') this.createdAt});
+  const _CategoryModel({required this.id, required this.name, @JsonKey(name: 'icon_name') required this.iconName, @JsonKey(name: 'user_id') this.userId, @JsonKey(name: 'created_at') this.createdAt});
   factory _CategoryModel.fromJson(Map<String, dynamic> json) => _$CategoryModelFromJson(json);
 
 @override final  String id;
 @override final  String name;
 @override@JsonKey(name: 'icon_name') final  String iconName;
+@override@JsonKey(name: 'user_id') final  String? userId;
 @override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 
 /// Create a copy of CategoryModel
@@ -234,16 +236,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CategoryModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.iconName, iconName) || other.iconName == iconName)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CategoryModel&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.iconName, iconName) || other.iconName == iconName)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,iconName,createdAt);
+int get hashCode => Object.hash(runtimeType,id,name,iconName,userId,createdAt);
 
 @override
 String toString() {
-  return 'CategoryModel(id: $id, name: $name, iconName: $iconName, createdAt: $createdAt)';
+  return 'CategoryModel(id: $id, name: $name, iconName: $iconName, userId: $userId, createdAt: $createdAt)';
 }
 
 
@@ -254,7 +256,7 @@ abstract mixin class _$CategoryModelCopyWith<$Res> implements $CategoryModelCopy
   factory _$CategoryModelCopyWith(_CategoryModel value, $Res Function(_CategoryModel) _then) = __$CategoryModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name,@JsonKey(name: 'icon_name') String iconName,@JsonKey(name: 'created_at') DateTime? createdAt
+ String id, String name,@JsonKey(name: 'icon_name') String iconName,@JsonKey(name: 'user_id') String? userId,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -271,12 +273,13 @@ class __$CategoryModelCopyWithImpl<$Res>
 
 /// Create a copy of CategoryModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? iconName = null,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? iconName = null,Object? userId = freezed,Object? createdAt = freezed,}) {
   return _then(_CategoryModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,iconName: null == iconName ? _self.iconName : iconName // ignore: cast_nullable_to_non_nullable
-as String,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as String,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
 }

@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:home_sync/core/constants/app_colors.dart';
 import 'package:home_sync/core/router/app_routes.dart';
+import 'package:home_sync/core/utils/demo_data_seeder.dart';
+import 'package:home_sync/core/utils/snackbar_utils.dart';
+import 'package:home_sync/core/widgets/animated_loading_indicator.dart';
 import 'package:home_sync/core/widgets/empty_state_widget.dart';
+import 'package:home_sync/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:home_sync/features/items/presentation/cubit/item_list_cubit.dart';
 import 'package:home_sync/features/items/presentation/widgets/item_card.dart';
 import 'package:home_sync/features/items/presentation/widgets/item_filter_chips.dart';
 import 'package:home_sync/features/items/presentation/widgets/item_search_bar.dart';
+import 'package:home_sync/features/maintenance/domain/entities/category_entity.dart';
 
 /// Tab 2: Danh sách Thiết bị, Tìm kiếm tức thì & Lọc đa tiêu chí
 class ItemListPage extends StatefulWidget {
@@ -20,16 +26,7 @@ class ItemListPage extends StatefulWidget {
 
 class _ItemListPageState extends State<ItemListPage> {
   final _searchController = TextEditingController();
-
-  final List<String> _categories = [
-    'Tất cả',
-    'Điện lạnh',
-    'Điện tử',
-    'Gia dụng',
-    'Thiết bị bếp',
-    'Xe cộ',
-    'Cá nhân',
-  ];
+  bool _isSeeding = false;
 
   @override
   void initState() {
@@ -43,12 +40,36 @@ class _ItemListPageState extends State<ItemListPage> {
     super.dispose();
   }
 
+  Future<void> _handleSeedDemoData() async {
+    setState(() => _isSeeding = true);
+    AppSnackBar.showSuccess(context, 'Đang tự động tạo 6 thiết bị mẫu...');
+    
+    final success = await DemoDataSeeder.seedDemoData();
+    if (!mounted) return;
+
+    setState(() => _isSeeding = false);
+    if (success) {
+      context.read<ItemListCubit>().loadItems();
+      context.read<DashboardCubit>().loadDashboard();
+      AppSnackBar.showSuccess(context, '🎉 Đã nạp thành công 6 thiết bị mẫu phong phú!');
+    } else {
+      AppSnackBar.showError(context, 'Không thể nạp dữ liệu mẫu. Vui lòng thử lại!');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Thiết bị & Bảo hành'),
         actions: [
+          IconButton(
+            icon: _isSeeding 
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(LucideIcons.sparkles, color: Colors.amber),
+            tooltip: 'Nạp dữ liệu mẫu nhanh',
+            onPressed: _isSeeding ? null : _handleSeedDemoData,
+          ),
           IconButton(
             icon: const Icon(LucideIcons.plus),
             tooltip: 'Thêm thiết bị mới',
@@ -79,14 +100,15 @@ class _ItemListPageState extends State<ItemListPage> {
           // 2. Filter Bar (Category Chips + Favorite Toggle)
           BlocBuilder<ItemListCubit, ItemListState>(
             builder: (context, state) {
-              final selectedCat = state is ItemListLoaded ? state.selectedCategoryId : null;
+              final categories = state is ItemListLoaded ? state.categories : <CategoryEntity>[];
+              final selectedCatId = state is ItemListLoaded ? state.selectedCategoryId : null;
               final onlyFavorites = state is ItemListLoaded ? state.onlyFavorites : false;
 
               return ItemFilterChips(
-                categories: _categories,
-                selectedCategory: selectedCat,
+                categories: categories,
+                selectedCategoryId: selectedCatId,
                 onlyFavorites: onlyFavorites,
-                onCategorySelected: (cat) => context.read<ItemListCubit>().filterByCategory(cat),
+                onCategorySelected: (catId) => context.read<ItemListCubit>().filterByCategory(catId),
                 onToggleFavorite: () => context.read<ItemListCubit>().toggleFavoriteFilter(),
               );
             },
@@ -101,24 +123,33 @@ class _ItemListPageState extends State<ItemListPage> {
               child: BlocBuilder<ItemListCubit, ItemListState>(
                 builder: (context, state) => switch (state) {
                   ItemListInitial() || ItemListLoading() => const Center(
-                      child: CircularProgressIndicator(),
+                      child: AnimatedLoadingIndicator(
+                        message: 'Đang tải danh sách thiết bị...',
+                      ),
                     ),
                   ItemListError(:final message) => Center(
                       child: Text(message),
                     ),
                   ItemListLoaded(:final filteredItems) => filteredItems.isEmpty
-                      ? EmptyStateWidget(
-                          icon: LucideIcons.layers,
-                          title: 'Không tìm thấy thiết bị',
-                          subtitle: _searchController.text.isNotEmpty
-                              ? 'Hãy thử tìm với từ khóa khác'
-                              : 'Bắt đầu bằng việc thêm thiết bị đầu tiên vào ngôi nhà của bạn.',
-                          actionLabel: _searchController.text.isEmpty ? 'Thêm thiết bị ngay' : null,
-                          onAction: () => context.push(AppRoutes.itemsAdd),
+                      ? ListView(
+                          children: [
+                            const SizedBox(height: 40),
+                            EmptyStateWidget(
+                              icon: LucideIcons.layers,
+                              title: 'Chưa có thiết bị nào',
+                              subtitle: _searchController.text.isNotEmpty
+                                  ? 'Hãy thử tìm với từ khóa khác'
+                                  : 'Bạn có thể thêm thiết bị thủ công hoặc bấm nút bên dưới để tạo nhanh 7 thiết bị mẫu trải nghiệm.',
+                              actionLabel: '✨ Nạp 7 thiết bị mẫu nhanh',
+                              onAction: _handleSeedDemoData,
+                            ),
+                          ],
                         )
                       : ListView.builder(
                           padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
                           itemCount: filteredItems.length,
+                          scrollCacheExtent: const ScrollCacheExtent.pixels(500),
+                          physics: const AlwaysScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
                             final item = filteredItems[index];
                             return ItemCard(

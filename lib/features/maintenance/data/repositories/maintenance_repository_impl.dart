@@ -1,47 +1,57 @@
 import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:home_sync/core/utils/warranty_calculator.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:home_sync/features/maintenance/domain/repositories/maintenance_repository.dart';
 import 'package:home_sync/features/maintenance/data/mappers/category_mapper.dart';
 import 'package:home_sync/features/maintenance/data/mappers/maintenance_task_mapper.dart';
 import 'package:home_sync/features/maintenance/data/models/category_model.dart';
 import 'package:home_sync/features/maintenance/data/models/maintenance_preset_model.dart';
 import 'package:home_sync/features/maintenance/data/models/maintenance_task_model.dart';
+import 'package:home_sync/features/maintenance/domain/repositories/maintenance_repository.dart';
 
-/// Remote Data Source cho Maintenance
+/// Remote Data Source cho Maintenance Tasks & Categories
 class MaintenanceRemoteDataSource {
-  MaintenanceRemoteDataSource({SupabaseClient? client}) : _client = client ?? Supabase.instance.client;
+  MaintenanceRemoteDataSource({SupabaseClient? client})
+      : _client = client ?? Supabase.instance.client;
 
   final SupabaseClient _client;
 
   Future<List<MaintenanceTaskModel>> getTasks({String? itemId, bool? isCompleted}) async {
-    var request = _client.from('maintenance_tasks').select('*, items(name, location, user_id)');
-
+    var query = _client.from('maintenance_tasks').select('*, items(name)');
     if (itemId != null) {
-      request = request.eq('item_id', itemId);
+      query = query.eq('item_id', itemId);
     }
     if (isCompleted != null) {
-      request = request.eq('is_completed', isCompleted);
+      query = query.eq('is_completed', isCompleted);
     }
-
-    final response = await request.order('next_due_date', ascending: true);
+    final response = await query.order('next_due_date');
     final list = response as List<dynamic>;
-    return list.map((json) => MaintenanceTaskModel.fromJson(json as Map<String, dynamic>)).toList();
+    return list.map((json) {
+      final map = Map<String, dynamic>.from(json as Map);
+      if (map['items'] != null && map['items'] is Map) {
+        map['item_name'] = map['items']['name'];
+      }
+      return MaintenanceTaskModel.fromJson(map);
+    }).toList();
   }
 
   Future<MaintenanceTaskModel> addTask(MaintenanceTaskModel task) async {
-    final data = task.toJson();
-    data.remove('id');
-    final response = await _client.from('maintenance_tasks').insert(data).select('*, items(name, location)').single();
-    return MaintenanceTaskModel.fromJson(response);
+    final response = await _client.from('maintenance_tasks').insert(task.toJson()).select('*, items(name)').single();
+    final map = Map<String, dynamic>.from(response);
+    if (map['items'] != null && map['items'] is Map) {
+      map['item_name'] = map['items']['name'];
+    }
+    return MaintenanceTaskModel.fromJson(map);
   }
 
   Future<MaintenanceTaskModel> updateTask(MaintenanceTaskModel task) async {
-    final data = task.toJson();
-    final response = await _client.from('maintenance_tasks').update(data).eq('id', task.id).select('*, items(name, location)').single();
-    return MaintenanceTaskModel.fromJson(response);
+    final response = await _client.from('maintenance_tasks').update(task.toJson()).eq('id', task.id).select('*, items(name)').single();
+    final map = Map<String, dynamic>.from(response);
+    if (map['items'] != null && map['items'] is Map) {
+      map['item_name'] = map['items']['name'];
+    }
+    return MaintenanceTaskModel.fromJson(map);
   }
 
   Future<void> completeTask({
@@ -95,10 +105,35 @@ class MaintenanceRemoteDataSource {
     await _client.from('maintenance_tasks').delete().eq('id', id);
   }
 
+  /// Lấy toàn bộ danh mục từ Supabase và sắp xếp chuẩn UX ('Khác' luôn đứng cuối cùng)
   Future<List<CategoryModel>> getCategories() async {
-    final response = await _client.from('categories').select().order('name');
+    final response = await _client.from('categories').select();
     final list = response as List<dynamic>;
-    return list.map((json) => CategoryModel.fromJson(json as Map<String, dynamic>)).toList();
+    final models = list.map((json) => CategoryModel.fromJson(json as Map<String, dynamic>)).toList();
+
+    const orderMap = {
+      'điện lạnh': 1,
+      'điện tử': 2,
+      'thiết bị bếp': 3,
+      'bếp': 3,
+      'gia dụng': 4,
+      'xe cộ': 5,
+      'xe': 5,
+      'cá nhân': 6,
+      'khác': 99,
+      'other': 99,
+    };
+
+    models.sort((a, b) {
+      final orderA = orderMap[a.name.toLowerCase()] ?? 50;
+      final orderB = orderMap[b.name.toLowerCase()] ?? 50;
+      if (orderA != orderB) {
+        return orderA.compareTo(orderB);
+      }
+      return a.name.compareTo(b.name);
+    });
+
+    return models;
   }
 
   Future<List<MaintenancePresetModel>> getPresetsByCategory(String categoryId) async {
@@ -132,9 +167,8 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
   @override
   Future<Either<Failure, MaintenanceTaskEntity>> addTask(MaintenanceTaskEntity task) async {
     try {
-      final model = MaintenanceTaskMapper.toModel(task);
-      final savedModel = await _remoteDataSource.addTask(model);
-      return Right(MaintenanceTaskMapper.toEntity(savedModel));
+      final model = await _remoteDataSource.addTask(MaintenanceTaskMapper.toModel(task));
+      return Right(MaintenanceTaskMapper.toEntity(model));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
@@ -143,9 +177,8 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
   @override
   Future<Either<Failure, MaintenanceTaskEntity>> updateTask(MaintenanceTaskEntity task) async {
     try {
-      final model = MaintenanceTaskMapper.toModel(task);
-      final updatedModel = await _remoteDataSource.updateTask(model);
-      return Right(MaintenanceTaskMapper.toEntity(updatedModel));
+      final model = await _remoteDataSource.updateTask(MaintenanceTaskMapper.toModel(task));
+      return Right(MaintenanceTaskMapper.toEntity(model));
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }

@@ -5,13 +5,18 @@ import 'package:home_sync/core/errors/failures.dart';
 import 'package:home_sync/features/items/domain/entities/item_entity.dart';
 import 'package:home_sync/features/items/domain/usecases/item_usecases.dart';
 import 'package:home_sync/features/items/presentation/cubit/item_list_cubit.dart';
+import 'package:home_sync/core/usecases/usecase.dart';
+import 'package:home_sync/features/maintenance/domain/entities/category_entity.dart';
+import 'package:home_sync/features/maintenance/domain/usecases/maintenance_usecases.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockGetItemsUseCase extends Mock implements GetItemsUseCase {}
+class MockGetCategoriesUseCase extends Mock implements GetCategoriesUseCase {}
 class MockToggleFavoriteUseCase extends Mock implements ToggleFavoriteUseCase {}
 
 void main() {
   late MockGetItemsUseCase mockGetItems;
+  late MockGetCategoriesUseCase mockGetCategories;
   late MockToggleFavoriteUseCase mockToggleFavorite;
   late ItemListCubit itemListCubit;
 
@@ -41,13 +46,18 @@ void main() {
   setUpAll(() {
     registerFallbackValue(const GetItemsParams());
     registerFallbackValue(const ToggleFavoriteParams(id: 'any', isFavorite: true));
+    registerFallbackValue(const NoParams());
   });
 
   setUp(() {
     mockGetItems = MockGetItemsUseCase();
+    mockGetCategories = MockGetCategoriesUseCase();
     mockToggleFavorite = MockToggleFavoriteUseCase();
+    when(() => mockGetCategories(any())).thenAnswer((_) async => const Right(<CategoryEntity>[]));
+
     itemListCubit = ItemListCubit(
       getItemsUseCase: mockGetItems,
+      getCategoriesUseCase: mockGetCategories,
       toggleFavoriteUseCase: mockToggleFavorite,
     );
   });

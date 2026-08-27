@@ -1,36 +1,53 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:home_sync/core/usecases/usecase.dart';
 import 'package:home_sync/features/items/domain/entities/item_entity.dart';
 import 'package:home_sync/features/items/domain/usecases/item_usecases.dart';
 import 'package:home_sync/features/items/presentation/cubit/item_list_state.dart';
+import 'package:home_sync/features/maintenance/domain/entities/category_entity.dart';
+import 'package:home_sync/features/maintenance/domain/usecases/maintenance_usecases.dart';
 
 export 'item_list_state.dart';
 
-/// Cubit quản lý danh sách thiết bị, tìm kiếm tức thì & bộ lọc đa tiêu chí
+/// Cubit quản lý danh sách thiết bị, tìm kiếm tức thì & bộ lọc đa tiêu chí chuẩn Clean Architecture
 class ItemListCubit extends Cubit<ItemListState> {
   ItemListCubit({
     required this.getItemsUseCase,
+    required this.getCategoriesUseCase,
     required this.toggleFavoriteUseCase,
   }) : super(const ItemListInitial());
 
   final GetItemsUseCase getItemsUseCase;
+  final GetCategoriesUseCase getCategoriesUseCase;
   final ToggleFavoriteUseCase toggleFavoriteUseCase;
 
   List<ItemEntity> _allCachedItems = [];
+  List<CategoryEntity> _allCachedCategories = [];
 
-  /// Tải toàn bộ danh sách thiết bị
+  /// Tải toàn bộ danh sách thiết bị & danh mục thực tế từ Database
   Future<void> loadItems() async {
     emit(const ItemListLoading());
-    final result = await getItemsUseCase();
-    result.fold(
+    final results = await Future.wait([
+      getItemsUseCase(),
+      getCategoriesUseCase(const NoParams()),
+    ]);
+
+    final itemsResult = results[0];
+    final categoriesResult = results[1];
+
+    itemsResult.fold(
       (failure) => emit(ItemListError(failure.message)),
       (items) {
-        _allCachedItems = items;
+        _allCachedItems = items as List<ItemEntity>;
+        categoriesResult.fold(
+          (_) => _allCachedCategories = [],
+          (cats) => _allCachedCategories = cats as List<CategoryEntity>,
+        );
         _applyFilters();
       },
     );
   }
 
-  /// Lọc theo danh mục
+  /// Lọc theo ID danh mục chuẩn xác (UUID Matching)
   void filterByCategory(String? categoryId) {
     if (state is ItemListLoaded) {
       final current = state as ItemListLoaded;
@@ -87,7 +104,6 @@ class ItemListCubit extends Cubit<ItemListState> {
   /// Đánh dấu / Bỏ đánh dấu sao thiết bị yêu thích
   Future<void> toggleItemFavorite(String itemId, bool currentStatus) async {
     final newStatus = !currentStatus;
-    // Cập nhật optimistic local cache
     _allCachedItems = _allCachedItems.map((item) {
       if (item.id == itemId) {
         return ItemEntity(
@@ -135,39 +151,30 @@ class ItemListCubit extends Cubit<ItemListState> {
   }) {
     List<ItemEntity> filtered = List.from(_allCachedItems);
 
+    // Lọc theo Category ID chuẩn 100% (Không hardcode hay fuzzy matching)
     if (selectedCategoryId != null && selectedCategoryId.isNotEmpty) {
       filtered = filtered.where((item) => item.categoryId == selectedCategoryId).toList();
     }
 
+    // Lọc theo Vị trí
     if (selectedLocation != null && selectedLocation.isNotEmpty) {
       filtered = filtered.where((item) => item.location == selectedLocation).toList();
     }
 
+    // Lọc theo Yêu thích
     if (onlyFavorites) {
       filtered = filtered.where((item) => item.isFavorite).toList();
     }
 
+    // Tìm kiếm tức thì theo Domain Logic
     if (searchQuery.trim().isNotEmpty) {
-      final q = searchQuery.trim().toLowerCase();
-      filtered = filtered.where((item) {
-        final name = item.name.toLowerCase();
-        final brand = (item.brand ?? '').toLowerCase();
-        final serial = (item.serialNumber ?? '').toLowerCase();
-        final model = (item.modelNumber ?? '').toLowerCase();
-        final location = (item.location ?? '').toLowerCase();
-        final store = (item.storeName ?? '').toLowerCase();
-        return name.contains(q) ||
-            brand.contains(q) ||
-            serial.contains(q) ||
-            model.contains(q) ||
-            location.contains(q) ||
-            store.contains(q);
-      }).toList();
+      filtered = filtered.where((item) => item.matchesSearch(searchQuery)).toList();
     }
 
     emit(ItemListLoaded(
       items: _allCachedItems,
       filteredItems: filtered,
+      categories: _allCachedCategories,
       selectedCategoryId: selectedCategoryId,
       selectedLocation: selectedLocation,
       searchQuery: searchQuery,

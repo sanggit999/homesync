@@ -1,31 +1,21 @@
-/// Entity đại diện cho Danh mục thiết bị
+export 'maintenance_preset_entity.dart';
+
+/// Entity đại diện cho Danh mục thiết bị trong Tầng Domain
 class CategoryEntity {
   const CategoryEntity({
     required this.id,
     required this.name,
     required this.iconName,
+    this.userId,
     this.createdAt,
   });
 
   final String id;
   final String name;
   final String iconName;
+  final String? userId; // null: Danh mục hệ thống mặc định, != null: Danh mục riêng của User
   final DateTime? createdAt;
-}
 
-/// Entity đại diện cho Mẫu Gợi Ý Chu Kỳ Bảo Trì Thông Minh (Presets)
-class MaintenancePresetEntity {
-  const MaintenancePresetEntity({
-    required this.id,
-    required this.categoryId,
-    required this.presetName,
-    required this.defaultFrequencyMonths,
-    this.suggestedPriority = 'medium',
-  });
-
-  final String id;
-  final String categoryId;
-  final String presetName;
-  final int defaultFrequencyMonths;
-  final String suggestedPriority;
+  /// Kiểm tra xem có phải danh mục mặc định của hệ thống không
+  bool get isSystemCategory => userId == null;
 }

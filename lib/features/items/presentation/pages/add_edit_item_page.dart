@@ -10,6 +10,10 @@ import 'package:home_sync/features/items/domain/entities/item_entity.dart';
 import 'package:home_sync/features/items/presentation/cubit/item_form_cubit.dart';
 import 'package:home_sync/features/items/presentation/cubit/item_list_cubit.dart';
 
+import 'package:home_sync/core/di/injection_container.dart';
+import 'package:home_sync/features/maintenance/domain/entities/category_entity.dart';
+import 'package:home_sync/features/maintenance/domain/usecases/maintenance_usecases.dart';
+
 /// Màn hình Thêm / Chỉnh sửa Thiết bị (Kèm gợi ý Smart Maintenance Presets)
 class AddEditItemPage extends StatefulWidget {
   const AddEditItemPage({super.key, this.itemToEdit});
@@ -33,20 +37,12 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
   late TextEditingController _supportPhoneController;
   late TextEditingController _notesController;
 
-  String? _selectedCategory;
+  String? _selectedCategoryId;
+  String? _selectedCategoryName;
+  List<CategoryEntity> _categories = [];
   late DateTime _purchaseDate;
   late DateTime _warrantyExpiryDate;
   int _warrantyMonths = 12;
-
-  final List<String> _categoryOptions = [
-    'Điện lạnh',
-    'Điện tử',
-    'Gia dụng',
-    'Thiết bị bếp',
-    'Xe cộ',
-    'Cá nhân',
-    'Khác',
-  ];
 
   final Map<String, String> _smartPresetSuggestions = {
     'Điện lạnh': '💡 Gợi ý: Vệ sinh lưới lọc bụi & bảo dưỡng gas mỗi 6 tháng.',
@@ -69,10 +65,31 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
     _supportPhoneController = TextEditingController(text: item?.supportPhone ?? '');
     _notesController = TextEditingController(text: item?.notes ?? '');
 
-    _selectedCategory = item?.categoryName ?? 'Điện tử';
+    _selectedCategoryId = item?.categoryId;
+    _selectedCategoryName = item?.categoryName;
     _purchaseDate = item?.purchaseDate ?? DateTime.now();
     _warrantyExpiryDate = item?.warrantyExpiryDate ?? DateTime.now().add(const Duration(days: 365));
     _warrantyMonths = item?.warrantyPeriodMonths ?? 12;
+
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final getCategoriesUseCase = sl<GetCategoriesUseCase>();
+    final result = await getCategoriesUseCase();
+    result.fold(
+      (_) {},
+      (cats) {
+        if (!mounted) return;
+        setState(() {
+          _categories = cats;
+          if (_selectedCategoryId == null && _selectedCategoryName == null && _categories.isNotEmpty) {
+            _selectedCategoryId = _categories.first.id;
+            _selectedCategoryName = _categories.first.name;
+          }
+        });
+      },
+    );
   }
 
   @override
@@ -89,10 +106,12 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
     super.dispose();
   }
 
-  void _onCategoryChanged(String? val) {
+  void _onCategorySelected(String? catId) {
     setState(() {
-      _selectedCategory = val;
-      if (val == 'Điện lạnh' && _supportPhoneController.text.isEmpty) {
+      _selectedCategoryId = catId;
+      final found = _categories.where((c) => c.id == catId);
+      _selectedCategoryName = found.isNotEmpty ? found.first.name : null;
+      if (_selectedCategoryName == 'Điện lạnh' && _supportPhoneController.text.isEmpty) {
         _supportPhoneController.text = '1800-1593';
       }
     });
@@ -149,7 +168,7 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                if (_selectedCategory != null && _smartPresetSuggestions.containsKey(_selectedCategory))
+                if (_selectedCategoryName != null && _smartPresetSuggestions.containsKey(_selectedCategoryName))
                   Container(
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(12),
@@ -159,7 +178,7 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
                       border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                     ),
                     child: Text(
-                      _smartPresetSuggestions[_selectedCategory]!,
+                      _smartPresetSuggestions[_selectedCategoryName]!,
                       style: const TextStyle(fontSize: 12, color: AppColors.primary),
                     ),
                   ),
@@ -182,11 +201,14 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        initialValue: _selectedCategory,
-                        items: _categoryOptions
-                            .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        initialValue: _selectedCategoryId,
+                        items: _categories
+                            .map((c) => DropdownMenuItem(
+                                  value: c.id,
+                                  child: Text(c.name),
+                                ))
                             .toList(),
-                        onChanged: _onCategoryChanged,
+                        onChanged: _onCategorySelected,
                         decoration: const InputDecoration(
                           labelText: 'Danh mục',
                           prefixIcon: Icon(LucideIcons.tag, size: 18),
@@ -389,7 +411,8 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
       id: isEditing ? widget.itemToEdit!.id : '',
       userId: userId,
       name: _nameController.text.trim(),
-      categoryName: _selectedCategory,
+      categoryId: _selectedCategoryId,
+      categoryName: _selectedCategoryName,
       brand: _brandController.text.trim().isNotEmpty ? _brandController.text.trim() : null,
       modelNumber: _modelController.text.trim().isNotEmpty ? _modelController.text.trim() : null,
       serialNumber: _serialController.text.trim().isNotEmpty ? _serialController.text.trim() : null,

@@ -11,6 +11,7 @@ class CategoryMapper {
       id: model.id,
       name: model.name,
       iconName: model.iconName,
+      userId: model.userId,
       createdAt: model.createdAt,
     );
   }
@@ -20,6 +21,7 @@ class CategoryMapper {
       id: entity.id,
       name: entity.name,
       iconName: entity.iconName,
+      userId: entity.userId,
       createdAt: entity.createdAt,
     );
   }
