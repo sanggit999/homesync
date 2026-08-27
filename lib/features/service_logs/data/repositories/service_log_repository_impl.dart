@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -71,7 +72,11 @@ class ServiceLogRepositoryImpl implements ServiceLogRepository {
         toDate: toDate,
       );
       return Right(models.map(ServiceLogMapper.toEntity).toList());
+    } on PostgrestException catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
+      return Left(ServerFailure('[${e.code}] ${e.message}'));
     } catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Lỗi không xác định: $e');
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -82,7 +87,11 @@ class ServiceLogRepositoryImpl implements ServiceLogRepository {
       final model = ServiceLogMapper.toModel(log);
       final savedModel = await _remoteDataSource.addLog(model);
       return Right(ServiceLogMapper.toEntity(savedModel));
+    } on PostgrestException catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
+      return Left(ServerFailure('[${e.code}] ${e.message}'));
     } catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Lỗi không xác định: $e');
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -92,7 +101,11 @@ class ServiceLogRepositoryImpl implements ServiceLogRepository {
     try {
       await _remoteDataSource.deleteLog(id);
       return const Right(unit);
+    } on PostgrestException catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
+      return Left(ServerFailure('[${e.code}] ${e.message}'));
     } catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Lỗi không xác định: $e');
       return Left(ServerFailure(e.toString()));
     }
   }
@@ -102,7 +115,11 @@ class ServiceLogRepositoryImpl implements ServiceLogRepository {
     try {
       final total = await _remoteDataSource.getTotalCost(fromDate: fromDate, toDate: toDate);
       return Right(total);
+    } on PostgrestException catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
+      return Left(ServerFailure('[${e.code}] ${e.message}'));
     } catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Lỗi không xác định: $e');
       return Left(ServerFailure(e.toString()));
     }
   }

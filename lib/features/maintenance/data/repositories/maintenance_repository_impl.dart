@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
 import 'package:home_sync/core/utils/warranty_calculator.dart';
@@ -119,7 +120,11 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
     try {
       final models = await _remoteDataSource.getTasks(itemId: itemId, isCompleted: isCompleted);
       return Right(models.map(MaintenanceTaskMapper.toEntity).toList());
+    } on PostgrestException catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - MAINTENANCE_TASKS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
+      return Left(ServerFailure('[${e.code}] ${e.message}'));
     } catch (e) {
+      debugPrint('[HOMESYNC DB ERROR - MAINTENANCE_TASKS] Lỗi không xác định: $e');
       return Left(ServerFailure(e.toString()));
     }
   }
