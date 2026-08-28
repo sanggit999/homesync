@@ -1,20 +1,24 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:home_sync/core/constants/app_colors.dart';
+import 'package:home_sync/core/di/injection_container.dart';
+import 'package:home_sync/core/services/storage_service.dart';
 import 'package:home_sync/core/widgets/app_card.dart';
 import 'package:home_sync/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:home_sync/features/items/domain/entities/item_entity.dart';
 import 'package:home_sync/features/items/presentation/cubit/item_form_cubit.dart';
 import 'package:home_sync/features/items/presentation/cubit/item_list_cubit.dart';
-
-import 'package:home_sync/core/di/injection_container.dart';
+import 'package:home_sync/features/items/presentation/widgets/item_device_info_card.dart';
+import 'package:home_sync/features/items/presentation/widgets/item_notes_card.dart';
+import 'package:home_sync/features/items/presentation/widgets/item_photo_picker_card.dart';
+import 'package:home_sync/features/items/presentation/widgets/item_warranty_purchase_card.dart';
 import 'package:home_sync/features/maintenance/domain/entities/category_entity.dart';
 import 'package:home_sync/features/maintenance/domain/usecases/maintenance_usecases.dart';
+import 'package:intl/intl.dart';
 
-/// Màn hình Thêm / Chỉnh sửa Thiết bị (Kèm gợi ý Smart Maintenance Presets)
+/// Màn hình Thêm / Chỉnh sửa Thiết bị (Clean Architecture, Modular Components)
 class AddEditItemPage extends StatefulWidget {
   const AddEditItemPage({super.key, this.itemToEdit});
 
@@ -27,15 +31,15 @@ class AddEditItemPage extends StatefulWidget {
 class _AddEditItemPageState extends State<AddEditItemPage> {
   final _formKey = GlobalKey<FormState>();
 
-  late TextEditingController _nameController;
-  late TextEditingController _brandController;
-  late TextEditingController _modelController;
-  late TextEditingController _serialController;
-  late TextEditingController _locationController;
-  late TextEditingController _storeController;
-  late TextEditingController _priceController;
-  late TextEditingController _supportPhoneController;
-  late TextEditingController _notesController;
+  late final TextEditingController _nameController;
+  late final TextEditingController _brandController;
+  late final TextEditingController _modelController;
+  late final TextEditingController _serialController;
+  late final TextEditingController _locationController;
+  late final TextEditingController _storeController;
+  late final TextEditingController _priceController;
+  late final TextEditingController _supportPhoneController;
+  late final TextEditingController _notesController;
 
   String? _selectedCategoryId;
   String? _selectedCategoryName;
@@ -44,12 +48,9 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
   late DateTime _warrantyExpiryDate;
   int _warrantyMonths = 12;
 
-  final Map<String, String> _smartPresetSuggestions = {
-    'Điện lạnh': '💡 Gợi ý: Vệ sinh lưới lọc bụi & bảo dưỡng gas mỗi 6 tháng.',
-    'Gia dụng': '💡 Gợi ý: Thay lõi lọc nước mỗi 6-12 tháng tùy lưu lượng.',
-    'Xe cộ': '💡 Gợi ý: Thay dầu máy động cơ mỗi 3.000 - 5.000 km hoặc 6 tháng.',
-    'Thiết bị bếp': '💡 Gợi ý: Khử cặn máy rửa bát & vệ sinh lưới hút mùi định kỳ 3 tháng.',
-  };
+  String? _deviceImagePath;
+  String? _receiptImagePath;
+  String? _warrantyCardImagePath;
 
   @override
   void initState() {
@@ -61,15 +62,27 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
     _serialController = TextEditingController(text: item?.serialNumber ?? '');
     _locationController = TextEditingController(text: item?.location ?? 'Phòng khách');
     _storeController = TextEditingController(text: item?.storeName ?? '');
-    _priceController = TextEditingController(text: item?.price != null ? item!.price!.toStringAsFixed(0) : '');
+    
+    // Format giá ban đầu có dấu chấm phân cách
+    final initialPrice = item?.price;
+    _priceController = TextEditingController(
+      text: initialPrice != null && initialPrice > 0
+          ? NumberFormat('#,###', 'vi_VN').format(initialPrice).replaceAll(',', '.')
+          : '',
+    );
     _supportPhoneController = TextEditingController(text: item?.supportPhone ?? '');
     _notesController = TextEditingController(text: item?.notes ?? '');
 
     _selectedCategoryId = item?.categoryId;
     _selectedCategoryName = item?.categoryName;
+
     _purchaseDate = item?.purchaseDate ?? DateTime.now();
     _warrantyExpiryDate = item?.warrantyExpiryDate ?? DateTime.now().add(const Duration(days: 365));
     _warrantyMonths = item?.warrantyPeriodMonths ?? 12;
+
+    _deviceImagePath = item?.deviceImageUrl;
+    _receiptImagePath = item?.receiptImageUrl;
+    _warrantyCardImagePath = item?.warrantyCardImageUrl;
 
     _loadCategories();
   }
@@ -80,10 +93,10 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
     result.fold(
       (_) {},
       (cats) {
-        if (!mounted) return;
+        if (!mounted || cats.isEmpty) return;
         setState(() {
           _categories = cats;
-          if (_selectedCategoryId == null && _selectedCategoryName == null && _categories.isNotEmpty) {
+          if (_selectedCategoryId == null && _selectedCategoryName == null) {
             _selectedCategoryId = _categories.first.id;
             _selectedCategoryName = _categories.first.name;
           }
@@ -106,14 +119,11 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
     super.dispose();
   }
 
-  void _onCategorySelected(String? catId) {
+  void _onCategorySelected(String catId) {
     setState(() {
       _selectedCategoryId = catId;
       final found = _categories.where((c) => c.id == catId);
       _selectedCategoryName = found.isNotEmpty ? found.first.name : null;
-      if (_selectedCategoryName == 'Điện lạnh' && _supportPhoneController.text.isEmpty) {
-        _supportPhoneController.text = '1800-1593';
-      }
     });
   }
 
@@ -126,6 +136,8 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
       );
     });
   }
+
+  bool _isUploading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +161,7 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
         }
       },
       builder: (context, state) {
-        final isSubmitting = state is ItemFormSubmitting;
+        final isSubmitting = state is ItemFormSubmitting || _isUploading;
 
         return Scaffold(
           appBar: AppBar(
@@ -166,229 +178,83 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
           body: Form(
             key: _formKey,
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
               children: [
-                if (_selectedCategoryName != null && _smartPresetSuggestions.containsKey(_selectedCategoryName))
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                    ),
-                    child: Text(
-                      _smartPresetSuggestions[_selectedCategoryName]!,
-                      style: const TextStyle(fontSize: 12, color: AppColors.primary),
-                    ),
-                  ),
-
+                // 1. Khối Đính Kèm Ảnh
                 AppCard(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Thông tin cơ bản', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Tên thiết bị *',
-                          hintText: 'VD: Điều hòa Daikin Inverter',
-                          prefixIcon: Icon(LucideIcons.package, size: 18),
-                        ),
-                        validator: (v) => v == null || v.trim().isEmpty ? 'Vui lòng nhập tên thiết bị' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedCategoryId,
-                        items: _categories
-                            .map((c) => DropdownMenuItem(
-                                  value: c.id,
-                                  child: Text(c.name),
-                                ))
-                            .toList(),
-                        onChanged: _onCategorySelected,
-                        decoration: const InputDecoration(
-                          labelText: 'Danh mục',
-                          prefixIcon: Icon(LucideIcons.tag, size: 18),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _brandController,
-                              decoration: const InputDecoration(labelText: 'Hãng (VD: Sony, Daikin)'),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _modelController,
-                              decoration: const InputDecoration(labelText: 'Model No'),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _serialController,
-                        decoration: const InputDecoration(
-                          labelText: 'Số Serial',
-                          hintText: 'Nhập hoặc quét mã vạch',
-                          prefixIcon: Icon(LucideIcons.scan, size: 18),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _locationController,
-                        decoration: const InputDecoration(
-                          labelText: 'Vị trí / Phòng',
-                          hintText: 'VD: Phòng khách, Bếp tầng 1',
-                          prefixIcon: Icon(LucideIcons.mapPin, size: 18),
-                        ),
-                      ),
-                    ],
+                  padding: const EdgeInsets.all(14),
+                  child: ItemPhotoPickerCard(
+                    deviceImagePath: _deviceImagePath,
+                    receiptImagePath: _receiptImagePath,
+                    warrantyCardImagePath: _warrantyCardImagePath,
+                    onDeviceImageChanged: (path) => setState(() => _deviceImagePath = path),
+                    onReceiptImageChanged: (path) => setState(() => _receiptImagePath = path),
+                    onWarrantyCardImageChanged: (path) => setState(() => _warrantyCardImagePath = path),
                   ),
                 ),
+                const SizedBox(height: 14),
 
-                const SizedBox(height: 16),
-
-                AppCard(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Bảo hành & Mua hàng', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                      const SizedBox(height: 14),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Ngày mua hàng', style: TextStyle(fontSize: 14)),
-                        subtitle: Text(
-                          DateFormat('dd/MM/yyyy').format(_purchaseDate),
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
-                        ),
-                        trailing: const Icon(LucideIcons.calendar, size: 20),
-                        onTap: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: _purchaseDate,
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime.now().add(const Duration(days: 365)),
-                          );
-                          if (picked != null) {
-                            setState(() {
-                              _purchaseDate = picked;
-                              _updateExpiryDate();
-                            });
-                          }
-                        },
-                      ),
-                      const Divider(height: 12),
-                      Row(
-                        children: [
-                          const Text('Thời hạn bảo hành:', style: TextStyle(fontSize: 14)),
-                          const Spacer(),
-                          DropdownButton<int>(
-                            value: _warrantyMonths,
-                            items: [6, 12, 18, 24, 36, 60]
-                                .map((m) => DropdownMenuItem(value: m, child: Text('$m tháng')))
-                                .toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() {
-                                  _warrantyMonths = val;
-                                  _updateExpiryDate();
-                                });
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 12),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Ngày hết hạn bảo hành', style: TextStyle(fontSize: 14)),
-                        subtitle: Text(
-                          DateFormat('dd/MM/yyyy').format(_warrantyExpiryDate),
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.warning),
-                        ),
-                        trailing: const Icon(LucideIcons.calendarOff, size: 20),
-                        onTap: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: _warrantyExpiryDate,
-                            firstDate: _purchaseDate,
-                            lastDate: DateTime(2050),
-                          );
-                          if (picked != null) {
-                            setState(() => _warrantyExpiryDate = picked);
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _priceController,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(labelText: 'Giá mua (VNĐ)', prefixText: '₫ '),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _storeController,
-                              decoration: const InputDecoration(labelText: 'Nơi mua (Điện máy Xanh...)'),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _supportPhoneController,
-                        keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(
-                          labelText: 'Hotline bảo hành hãng',
-                          hintText: '1800-xxxx',
-                          prefixIcon: Icon(LucideIcons.phone, size: 18),
-                        ),
-                      ),
-                    ],
-                  ),
+                // 2. Khối Thông Tin Thiết Bị
+                ItemDeviceInfoCard(
+                  nameController: _nameController,
+                  brandController: _brandController,
+                  modelController: _modelController,
+                  serialController: _serialController,
+                  locationController: _locationController,
+                  categories: _categories,
+                  selectedCategoryId: _selectedCategoryId,
+                  onCategorySelected: _onCategorySelected,
                 ),
+                const SizedBox(height: 14),
 
-                const SizedBox(height: 16),
-
-                AppCard(
-                  padding: const EdgeInsets.all(16),
-                  child: TextFormField(
-                    controller: _notesController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Ghi chú thêm',
-                      hintText: 'Ví dụ: Cục nóng lắp ở ban công tầng 3...',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
+                // 3. Khối Bảo Hành & Mua Hàng
+                ItemWarrantyPurchaseCard(
+                  purchaseDate: _purchaseDate,
+                  warrantyExpiryDate: _warrantyExpiryDate,
+                  warrantyMonths: _warrantyMonths,
+                  priceController: _priceController,
+                  storeController: _storeController,
+                  supportPhoneController: _supportPhoneController,
+                  onPurchaseDateChanged: (d) {
+                    setState(() {
+                      _purchaseDate = d;
+                      _updateExpiryDate();
+                    });
+                  },
+                  onWarrantyExpiryDateChanged: (d) => setState(() => _warrantyExpiryDate = d),
+                  onWarrantyMonthsChanged: (m) {
+                    setState(() {
+                      _warrantyMonths = m;
+                      _updateExpiryDate();
+                    });
+                  },
                 ),
+                const SizedBox(height: 14),
 
-                const SizedBox(height: 32),
+                // 4. Khối Ghi Chú
+                ItemNotesCard(notesController: _notesController),
+                const SizedBox(height: 24),
+
+                // 5. Nút Lưu Thiết Bị
                 ElevatedButton(
                   onPressed: isSubmitting ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 52),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text(
-                    isEditing ? 'Cập nhật thiết bị' : 'Lưu thiết bị',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  child: isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : Text(
+                          isEditing ? 'Cập nhật thiết bị' : 'Lưu thiết bị',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
                 ),
               ],
             ),
@@ -398,14 +264,79 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
     );
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
     final authState = context.read<AuthCubit>().state;
     final userId = authState is Authenticated ? authState.user.id : 'guest-local';
 
     final isEditing = widget.itemToEdit != null;
-    final price = double.tryParse(_priceController.text.replaceAll(',', '').replaceAll('.', ''));
+    final cleanPrice = _priceController.text.replaceAll('.', '').replaceAll(',', '').trim();
+    final price = double.tryParse(cleanPrice);
+
+    setState(() => _isUploading = true);
+
+    String? uploadedDeviceUrl = _deviceImagePath;
+    String? uploadedReceiptUrl = _receiptImagePath;
+    String? uploadedWarrantyUrl = _warrantyCardImagePath;
+
+    try {
+      final storageService = sl<StorageService>();
+
+      // 1. Upload ảnh thiết bị nếu là local file
+      if (_deviceImagePath != null && !_deviceImagePath!.startsWith('http')) {
+        final file = File(_deviceImagePath!);
+        if (await file.exists()) {
+          final ext = _deviceImagePath!.split('.').last;
+          final storagePath = '$userId/${DateTime.now().millisecondsSinceEpoch}_device.$ext';
+          uploadedDeviceUrl = await storageService.uploadFile(
+            path: storagePath,
+            fileSource: file,
+          );
+        }
+      }
+
+      // 2. Upload hóa đơn nếu là local file
+      if (_receiptImagePath != null && !_receiptImagePath!.startsWith('http')) {
+        final file = File(_receiptImagePath!);
+        if (await file.exists()) {
+          final ext = _receiptImagePath!.split('.').last;
+          final storagePath = '$userId/${DateTime.now().millisecondsSinceEpoch}_receipt.$ext';
+          uploadedReceiptUrl = await storageService.uploadFile(
+            path: storagePath,
+            fileSource: file,
+          );
+        }
+      }
+
+      // 3. Upload phiếu bảo hành nếu là local file
+      if (_warrantyCardImagePath != null && !_warrantyCardImagePath!.startsWith('http')) {
+        final file = File(_warrantyCardImagePath!);
+        if (await file.exists()) {
+          final ext = _warrantyCardImagePath!.split('.').last;
+          final storagePath = '$userId/${DateTime.now().millisecondsSinceEpoch}_warranty.$ext';
+          uploadedWarrantyUrl = await storageService.uploadFile(
+            path: storagePath,
+            fileSource: file,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('[HOMESYNC STORAGE ERROR] Lỗi tải ảnh lên Supabase Storage: $e');
+      if (mounted) {
+        setState(() => _isUploading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi tải ảnh lên đám mây: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() => _isUploading = false);
 
     final item = ItemEntity(
       id: isEditing ? widget.itemToEdit!.id : '',
@@ -426,9 +357,9 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
       notes: _notesController.text.trim().isNotEmpty ? _notesController.text.trim() : null,
       isFavorite: widget.itemToEdit?.isFavorite ?? false,
       status: widget.itemToEdit?.status ?? 'active',
-      deviceImageUrl: widget.itemToEdit?.deviceImageUrl,
-      receiptImageUrl: widget.itemToEdit?.receiptImageUrl,
-      warrantyCardImageUrl: widget.itemToEdit?.warrantyCardImageUrl,
+      deviceImageUrl: uploadedDeviceUrl,
+      receiptImageUrl: uploadedReceiptUrl,
+      warrantyCardImageUrl: uploadedWarrantyUrl,
     );
 
     if (isEditing) {

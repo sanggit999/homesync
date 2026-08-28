@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,6 +26,13 @@ class ItemDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫', decimalDigits: 0);
+
+    ImageProvider getImageProvider(String path) {
+      if (path.startsWith('http://') || path.startsWith('https://')) {
+        return NetworkImage(path);
+      }
+      return FileImage(File(path));
+    }
 
     return BlocBuilder<ItemListCubit, ItemListState>(
       builder: (context, state) {
@@ -171,89 +179,57 @@ class ItemDetailPage extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // 3. Ảnh Hóa Đơn & Phiếu Bảo Hành (Zoom/Pan Viewer)
-              if (item.receiptImageUrl != null || item.warrantyCardImageUrl != null)
-                AppCard(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Chứng từ & Hóa đơn đính kèm',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          if (item.receiptImageUrl != null)
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => context.push(
-                                  AppRoutes.receiptViewer,
-                                  extra: item.receiptImageUrl,
-                                ),
-                                child: Container(
-                                  height: 120,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: AppColors.border),
-                                    image: DecorationImage(
-                                      image: NetworkImage(item.receiptImageUrl!),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  alignment: Alignment.bottomCenter,
-                                  child: Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(vertical: 4),
-                                    color: Colors.black54,
-                                    child: const Text(
-                                      'Hóa đơn mua hàng',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(color: Colors.white, fontSize: 11),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          if (item.receiptImageUrl != null && item.warrantyCardImageUrl != null)
-                            const SizedBox(width: 12),
-                          if (item.warrantyCardImageUrl != null)
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => context.push(
-                                  AppRoutes.receiptViewer,
-                                  extra: item.warrantyCardImageUrl,
-                                ),
-                                child: Container(
-                                  height: 120,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: AppColors.border),
-                                    image: DecorationImage(
-                                      image: NetworkImage(item.warrantyCardImageUrl!),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  alignment: Alignment.bottomCenter,
-                                  child: Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(vertical: 4),
-                                    color: Colors.black54,
-                                    child: const Text(
-                                      'Phiếu bảo hành',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(color: Colors.white, fontSize: 11),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
+              // 3. Khối 3 Ô Hình Ảnh & Chứng Từ (Ảnh thiết bị, Hóa đơn, Phiếu bảo hành)
+              AppCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Hình ảnh & Chứng từ',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
+                        if (item.deviceImageUrl != null || item.receiptImageUrl != null || item.warrantyCardImageUrl != null)
+                          const Text(
+                            'Chạm để phóng to',
+                            style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        _buildPhotoSlot(
+                          context: context,
+                          label: 'Ảnh thiết bị',
+                          icon: LucideIcons.camera,
+                          imagePath: item.deviceImageUrl,
+                          getImageProvider: getImageProvider,
+                        ),
+                        const SizedBox(width: 10),
+                        _buildPhotoSlot(
+                          context: context,
+                          label: 'Hóa đơn',
+                          icon: LucideIcons.receipt,
+                          imagePath: item.receiptImageUrl,
+                          getImageProvider: getImageProvider,
+                        ),
+                        const SizedBox(width: 10),
+                        _buildPhotoSlot(
+                          context: context,
+                          label: 'Phiếu BH',
+                          icon: LucideIcons.fileText,
+                          imagePath: item.warrantyCardImageUrl,
+                          getImageProvider: getImageProvider,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
+              ),
 
               if (item.notes != null && item.notes!.isNotEmpty) ...[
                 const SizedBox(height: 16),
@@ -309,6 +285,77 @@ class ItemDetailPage extends StatelessWidget {
           ),
           ?trailing,
         ],
+      ),
+    );
+  }
+
+  Widget _buildPhotoSlot({
+    required BuildContext context,
+    required String label,
+    required IconData icon,
+    required String? imagePath,
+    required ImageProvider Function(String) getImageProvider,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hasImage = imagePath != null && imagePath.isNotEmpty;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: hasImage
+            ? () => context.push(
+                  AppRoutes.receiptViewer,
+                  extra: imagePath,
+                )
+            : null,
+        child: Container(
+          height: 100,
+          decoration: BoxDecoration(
+            color: hasImage ? null : (isDark ? Colors.grey.shade900 : Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: hasImage ? AppColors.primary.withValues(alpha: 0.5) : (isDark ? Colors.grey.shade800 : Colors.grey.shade300),
+              width: hasImage ? 1.5 : 1.0,
+            ),
+            image: hasImage
+                ? DecorationImage(
+                    image: getImageProvider(imagePath),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+          ),
+          alignment: Alignment.bottomCenter,
+          child: hasImage
+              ? Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
+                  ),
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500),
+                  ),
+                )
+              : Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, size: 20, color: isDark ? Colors.grey.shade600 : Colors.grey.shade400),
+                      const SizedBox(height: 4),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.grey.shade500 : Colors.grey.shade500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+        ),
       ),
     );
   }

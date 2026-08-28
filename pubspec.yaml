@@ -29,9 +29,10 @@ dependencies:
   lucide_icons_flutter: ^3.1.17
   cupertino_icons: ^1.0.8
 
-  # Image Handling & Caching
+  # Image Handling, Scanner & Caching
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
+  mobile_scanner: ^7.4.0
 
   # Document & PDF Export (Insurance & Warranty Reports)
   pdf: ^3.11.1

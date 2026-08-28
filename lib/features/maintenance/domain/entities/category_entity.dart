@@ -1,6 +1,6 @@
 export 'maintenance_preset_entity.dart';
 
-/// Entity đại diện cho Danh mục thiết bị trong Tầng Domain
+/// Entity đại diện cho Danh mục thiết bị trong Tầng Domain (100% nạp từ DB)
 class CategoryEntity {
   const CategoryEntity({
     required this.id,

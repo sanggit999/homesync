@@ -220,11 +220,17 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
     }
   }
 
+  List<CategoryEntity>? _cachedCategories;
+
   @override
-  Future<Either<Failure, List<CategoryEntity>>> getCategories() async {
+  Future<Either<Failure, List<CategoryEntity>>> getCategories({bool forceRefresh = false}) async {
+    if (!forceRefresh && _cachedCategories != null && _cachedCategories!.isNotEmpty) {
+      return Right(_cachedCategories!);
+    }
     try {
       final models = await _remoteDataSource.getCategories();
-      return Right(models.map(CategoryMapper.toEntity).toList());
+      _cachedCategories = models.map(CategoryMapper.toEntity).toList();
+      return Right(_cachedCategories!);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
