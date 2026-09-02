@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
+import 'package:home_sync/core/utils/api_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:home_sync/features/service_logs/domain/repositories/service_log_repository.dart';
 import 'package:home_sync/features/service_logs/data/mappers/service_log_mapper.dart';
@@ -52,7 +52,7 @@ class ServiceLogsRemoteDataSource {
   }
 }
 
-/// Repository Implementation cho Service Logs với fpdart Either
+/// Repository Implementation cho Service Logs với Global safeApiCall
 class ServiceLogRepositoryImpl implements ServiceLogRepository {
   ServiceLogRepositoryImpl({ServiceLogsRemoteDataSource? remoteDataSource})
       : _remoteDataSource = remoteDataSource ?? ServiceLogsRemoteDataSource();
@@ -64,63 +64,38 @@ class ServiceLogRepositoryImpl implements ServiceLogRepository {
     String? itemId,
     DateTime? fromDate,
     DateTime? toDate,
-  }) async {
-    try {
+  }) {
+    return safeApiCall(() async {
       final models = await _remoteDataSource.getLogs(
         itemId: itemId,
         fromDate: fromDate,
         toDate: toDate,
       );
-      return Right(models.map(ServiceLogMapper.toEntity).toList());
-    } on PostgrestException catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
-      return Left(ServerFailure('[${e.code}] ${e.message}'));
-    } catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Lỗi không xác định: $e');
-      return Left(ServerFailure(e.toString()));
-    }
+      return models.map(ServiceLogMapper.toEntity).toList();
+    });
   }
 
   @override
-  Future<Either<Failure, ServiceLogEntity>> addLog(ServiceLogEntity log) async {
-    try {
+  Future<Either<Failure, ServiceLogEntity>> addLog(ServiceLogEntity log) {
+    return safeApiCall(() async {
       final model = ServiceLogMapper.toModel(log);
       final savedModel = await _remoteDataSource.addLog(model);
-      return Right(ServiceLogMapper.toEntity(savedModel));
-    } on PostgrestException catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
-      return Left(ServerFailure('[${e.code}] ${e.message}'));
-    } catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Lỗi không xác định: $e');
-      return Left(ServerFailure(e.toString()));
-    }
+      return ServiceLogMapper.toEntity(savedModel);
+    });
   }
 
   @override
-  Future<Either<Failure, Unit>> deleteLog(String id) async {
-    try {
+  Future<Either<Failure, Unit>> deleteLog(String id) {
+    return safeApiCall(() async {
       await _remoteDataSource.deleteLog(id);
-      return const Right(unit);
-    } on PostgrestException catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
-      return Left(ServerFailure('[${e.code}] ${e.message}'));
-    } catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Lỗi không xác định: $e');
-      return Left(ServerFailure(e.toString()));
-    }
+      return unit;
+    });
   }
 
   @override
-  Future<Either<Failure, double>> getTotalCost({DateTime? fromDate, DateTime? toDate}) async {
-    try {
-      final total = await _remoteDataSource.getTotalCost(fromDate: fromDate, toDate: toDate);
-      return Right(total);
-    } on PostgrestException catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
-      return Left(ServerFailure('[${e.code}] ${e.message}'));
-    } catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - SERVICE_LOGS] Lỗi không xác định: $e');
-      return Left(ServerFailure(e.toString()));
-    }
+  Future<Either<Failure, double>> getTotalCost({DateTime? fromDate, DateTime? toDate}) {
+    return safeApiCall(() async {
+      return await _remoteDataSource.getTotalCost(fromDate: fromDate, toDate: toDate);
+    });
   }
 }

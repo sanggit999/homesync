@@ -1,13 +1,13 @@
-import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:home_sync/core/errors/failures.dart';
+import 'package:home_sync/core/utils/api_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:home_sync/features/items/domain/repositories/item_repository.dart';
 import 'package:home_sync/features/items/data/mappers/item_mapper.dart';
 import 'package:home_sync/features/items/data/models/item_document_model.dart';
 import 'package:home_sync/features/items/data/models/item_model.dart';
 
-/// Remote Data Source cho Items giao tiếp Supabase PostgreSQL
+/// Remote Data Source cho Items giao tiếp Supabase PostgreSQL (Hỗ trợ Idempotent Upsert)
 class ItemsRemoteDataSource {
   ItemsRemoteDataSource({SupabaseClient? client}) : _client = client ?? Supabase.instance.client;
 
@@ -55,12 +55,22 @@ class ItemsRemoteDataSource {
     return ItemModel.fromJson(map);
   }
 
+  /// Thêm thiết bị mới với cơ chế Idempotent Upsert (Chống trùng lặp khi retry)
   Future<ItemModel> addItem(ItemModel item) async {
     final data = item.toJson();
-    data.remove('id'); // Tự sinh trên Supabase
+    // Giữ nguyên id nếu client đã sinh sẵn (Idempotency Key)
+    if (item.id.isEmpty) {
+      data.remove('id');
+    }
     data.remove('category_name');
     data.remove('category_icon');
-    final response = await _client.from('items').insert(data).select('*, categories(name, icon_name)').single();
+
+    final response = await _client
+        .from('items')
+        .upsert(data)
+        .select('*, categories(name, icon_name)')
+        .single();
+
     return ItemModel.fromJson(response);
   }
 
@@ -68,7 +78,12 @@ class ItemsRemoteDataSource {
     final data = item.toJson();
     data.remove('category_name');
     data.remove('category_icon');
-    final response = await _client.from('items').update(data).eq('id', item.id).select('*, categories(name, icon_name)').single();
+    final response = await _client
+        .from('items')
+        .update(data)
+        .eq('id', item.id)
+        .select('*, categories(name, icon_name)')
+        .single();
     return ItemModel.fromJson(response);
   }
 
@@ -88,8 +103,10 @@ class ItemsRemoteDataSource {
 
   Future<void> addItemDocument(ItemDocumentModel document) async {
     final data = document.toJson();
-    data.remove('id');
-    await _client.from('item_documents').insert(data);
+    if (document.id.isEmpty) {
+      data.remove('id');
+    }
+    await _client.from('item_documents').upsert(data);
   }
 
   Future<void> deleteItemDocument(String documentId) async {
@@ -97,7 +114,7 @@ class ItemsRemoteDataSource {
   }
 }
 
-/// Repository Implementation cho Items sử dụng fpdart Either
+/// Repository Implementation cho Items sử dụng Global safeApiCall phòng thủ mạng
 class ItemRepositoryImpl implements ItemRepository {
   ItemRepositoryImpl({ItemsRemoteDataSource? remoteDataSource})
       : _remoteDataSource = remoteDataSource ?? ItemsRemoteDataSource();
@@ -105,103 +122,81 @@ class ItemRepositoryImpl implements ItemRepository {
   final ItemsRemoteDataSource _remoteDataSource;
 
   @override
-  Future<Either<Failure, List<ItemEntity>>> getItems({String? categoryId, String? location, String? query}) async {
-    try {
+  Future<Either<Failure, List<ItemEntity>>> getItems({String? categoryId, String? location, String? query}) {
+    return safeApiCall(() async {
       final models = await _remoteDataSource.getItems(
         categoryId: categoryId,
         location: location,
         query: query,
       );
-      return Right(models.map(ItemMapper.toEntity).toList());
-    } on PostgrestException catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - ITEMS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
-      return Left(ServerFailure('[${e.code}] ${e.message}'));
-    } catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - ITEMS] Lỗi không xác định: $e');
-      return Left(ServerFailure(e.toString()));
-    }
+      return models.map(ItemMapper.toEntity).toList();
+    });
   }
 
   @override
-  Future<Either<Failure, ItemEntity>> getItemById(String id) async {
-    try {
+  Future<Either<Failure, ItemEntity>> getItemById(String id) {
+    return safeApiCall(() async {
       final model = await _remoteDataSource.getItemById(id);
-      return Right(ItemMapper.toEntity(model));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return ItemMapper.toEntity(model);
+    });
   }
 
   @override
-  Future<Either<Failure, ItemEntity>> addItem(ItemEntity item) async {
-    try {
+  Future<Either<Failure, ItemEntity>> addItem(ItemEntity item) {
+    return safeApiCall(() async {
       final model = ItemMapper.toModel(item);
       final savedModel = await _remoteDataSource.addItem(model);
-      return Right(ItemMapper.toEntity(savedModel));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return ItemMapper.toEntity(savedModel);
+    });
   }
 
   @override
-  Future<Either<Failure, ItemEntity>> updateItem(ItemEntity item) async {
-    try {
+  Future<Either<Failure, ItemEntity>> updateItem(ItemEntity item) {
+    return safeApiCall(() async {
       final model = ItemMapper.toModel(item);
       final updatedModel = await _remoteDataSource.updateItem(model);
-      return Right(ItemMapper.toEntity(updatedModel));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return ItemMapper.toEntity(updatedModel);
+    });
   }
 
   @override
-  Future<Either<Failure, Unit>> deleteItem(String id) async {
-    try {
+  Future<Either<Failure, Unit>> deleteItem(String id) {
+    return safeApiCall(() async {
       await _remoteDataSource.deleteItem(id);
-      return const Right(unit);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return unit;
+    });
   }
 
   @override
-  Future<Either<Failure, Unit>> toggleFavorite(String id, bool isFavorite) async {
-    try {
+  Future<Either<Failure, Unit>> toggleFavorite(String id, bool isFavorite) {
+    return safeApiCall(() async {
       await _remoteDataSource.toggleFavorite(id, isFavorite);
-      return const Right(unit);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return unit;
+    });
   }
 
   @override
-  Future<Either<Failure, List<ItemDocumentEntity>>> getItemDocuments(String itemId) async {
-    try {
+  Future<Either<Failure, List<ItemDocumentEntity>>> getItemDocuments(String itemId) {
+    return safeApiCall(() async {
       final models = await _remoteDataSource.getItemDocuments(itemId);
-      return Right(models.map(ItemMapper.documentToEntity).toList());
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return models.map(ItemMapper.documentToEntity).toList();
+    });
   }
 
   @override
-  Future<Either<Failure, Unit>> addItemDocument(ItemDocumentEntity document) async {
-    try {
+  Future<Either<Failure, Unit>> addItemDocument(ItemDocumentEntity document) {
+    return safeApiCall(() async {
       final model = ItemMapper.documentToModel(document);
       await _remoteDataSource.addItemDocument(model);
-      return const Right(unit);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return unit;
+    });
   }
 
   @override
-  Future<Either<Failure, Unit>> deleteItemDocument(String documentId) async {
-    try {
+  Future<Either<Failure, Unit>> deleteItemDocument(String documentId) {
+    return safeApiCall(() async {
       await _remoteDataSource.deleteItemDocument(documentId);
-      return const Right(unit);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return unit;
+    });
   }
 }

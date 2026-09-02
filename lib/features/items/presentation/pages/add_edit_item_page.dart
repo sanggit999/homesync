@@ -17,6 +17,7 @@ import 'package:home_sync/features/items/presentation/widgets/item_warranty_purc
 import 'package:home_sync/features/maintenance/domain/entities/category_entity.dart';
 import 'package:home_sync/features/maintenance/domain/usecases/maintenance_usecases.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 /// Màn hình Thêm / Chỉnh sửa Thiết bị (Clean Architecture, Modular Components)
 class AddEditItemPage extends StatefulWidget {
@@ -48,6 +49,7 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
   late DateTime _warrantyExpiryDate;
   int _warrantyMonths = 12;
 
+  late final String _clientGeneratedId;
   String? _deviceImagePath;
   String? _receiptImagePath;
   String? _warrantyCardImagePath;
@@ -56,6 +58,7 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
   void initState() {
     super.initState();
     final item = widget.itemToEdit;
+    _clientGeneratedId = (item != null && item.id.isNotEmpty) ? item.id : const Uuid().v4();
     _nameController = TextEditingController(text: item?.name ?? '');
     _brandController = TextEditingController(text: item?.brand ?? '');
     _modelController = TextEditingController(text: item?.modelNumber ?? '');
@@ -325,9 +328,16 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
       debugPrint('[HOMESYNC STORAGE ERROR] Lỗi tải ảnh lên Supabase Storage: $e');
       if (mounted) {
         setState(() => _isUploading = false);
+        final errStr = e.toString().toLowerCase();
+        final friendlyMsg = (errStr.contains('socket') || errStr.contains('network') || errStr.contains('failed host lookup') || errStr.contains('clientexception'))
+            ? 'Không có kết nối mạng. Vui lòng kiểm tra Wi-Fi/4G để tải ảnh lên.'
+            : (errStr.contains('timeout') || errStr.contains('timed out'))
+                ? 'Quá thời gian tải ảnh lên máy chủ (15s). Vui lòng thử lại.'
+                : 'Lỗi tải ảnh lên đám mây: $e';
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi tải ảnh lên đám mây: $e'),
+            content: Text(friendlyMsg),
             backgroundColor: AppColors.error,
           ),
         );
@@ -339,7 +349,7 @@ class _AddEditItemPageState extends State<AddEditItemPage> {
     setState(() => _isUploading = false);
 
     final item = ItemEntity(
-      id: isEditing ? widget.itemToEdit!.id : '',
+      id: _clientGeneratedId,
       userId: userId,
       name: _nameController.text.trim(),
       categoryId: _selectedCategoryId,
