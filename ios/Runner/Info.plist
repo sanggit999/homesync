@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>HomeSync cần quyền truy cập máy ảnh để quét mã vạch và số Serial của thiết bị.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>HomeSync cần quyền truy cập thư viện ảnh để tải lên hình ảnh thiết bị và hóa đơn.</string>
 </dict>
 </plist>

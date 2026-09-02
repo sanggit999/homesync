@@ -3,6 +3,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:home_sync/core/config/app_config.dart';
+import 'package:home_sync/core/services/storage_service.dart';
 
 // Features: Auth
 import 'package:home_sync/features/auth/data/repositories/auth_repository_impl.dart';
@@ -55,6 +56,7 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton<GoogleSignIn>(() => GoogleSignIn.instance);
   sl.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
+  sl.registerLazySingleton<StorageService>(() => StorageService(client: sl<SupabaseClient>()));
 
   // ==========================================
   // 2. DATA SOURCES
