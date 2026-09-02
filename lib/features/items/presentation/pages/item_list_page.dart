@@ -7,11 +7,11 @@ import 'package:home_sync/core/constants/app_colors.dart';
 import 'package:home_sync/core/router/app_routes.dart';
 import 'package:home_sync/core/utils/demo_data_seeder.dart';
 import 'package:home_sync/core/utils/snackbar_utils.dart';
-import 'package:home_sync/core/widgets/animated_loading_indicator.dart';
 import 'package:home_sync/core/widgets/empty_state_widget.dart';
 import 'package:home_sync/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:home_sync/features/items/presentation/cubit/item_list_cubit.dart';
 import 'package:home_sync/features/items/presentation/widgets/item_card.dart';
+import 'package:home_sync/features/items/presentation/widgets/item_card_skeleton.dart';
 import 'package:home_sync/features/items/presentation/widgets/item_filter_chips.dart';
 import 'package:home_sync/features/items/presentation/widgets/item_search_bar.dart';
 import 'package:home_sync/features/maintenance/domain/entities/category_entity.dart';
@@ -127,11 +127,7 @@ class _ItemListPageState extends State<ItemListPage> {
                   }
                 },
                 builder: (context, state) => switch (state) {
-                  ItemListInitial() || ItemListLoading() => const Center(
-                      child: AnimatedLoadingIndicator(
-                        message: 'Đang tải danh sách thiết bị...',
-                      ),
-                    ),
+                  ItemListInitial() || ItemListLoading() => const ItemListSkeletonView(),
                   ItemListError(:final message) => ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
