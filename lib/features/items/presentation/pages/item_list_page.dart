@@ -120,15 +120,51 @@ class _ItemListPageState extends State<ItemListPage> {
           Expanded(
             child: RefreshIndicator(
               onRefresh: () => context.read<ItemListCubit>().loadItems(),
-              child: BlocBuilder<ItemListCubit, ItemListState>(
+              child: BlocConsumer<ItemListCubit, ItemListState>(
+                listener: (context, state) {
+                  if (state is ItemListError) {
+                    AppSnackBar.showError(context, state.message);
+                  }
+                },
                 builder: (context, state) => switch (state) {
                   ItemListInitial() || ItemListLoading() => const Center(
                       child: AnimatedLoadingIndicator(
                         message: 'Đang tải danh sách thiết bị...',
                       ),
                     ),
-                  ItemListError(:final message) => Center(
-                      child: Text(message),
+                  ItemListError(:final message) => ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        const SizedBox(height: 80),
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(LucideIcons.wifiOff, size: 56, color: AppColors.error),
+                                const SizedBox(height: 16),
+                                Text(
+                                  message,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(height: 20),
+                                ElevatedButton.icon(
+                                  onPressed: () => context.read<ItemListCubit>().loadItems(),
+                                  icon: const Icon(LucideIcons.refreshCw, size: 16),
+                                  label: const Text('Thử lại'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ItemListLoaded(:final filteredItems) => filteredItems.isEmpty
                       ? ListView(

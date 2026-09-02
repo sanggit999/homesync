@@ -380,7 +380,7 @@ class _ItemWarrantyPurchaseCardState extends State<ItemWarrantyPurchaseCard> {
               scrollDirection: Axis.horizontal,
               scrollCacheExtent: const ScrollCacheExtent.pixels(200),
               itemCount: _warrantyDurationPresets.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
                 final months = _warrantyDurationPresets[index];
                 final isSelected = widget.warrantyMonths == months;
@@ -425,7 +425,7 @@ class _ItemWarrantyPurchaseCardState extends State<ItemWarrantyPurchaseCard> {
                 scrollDirection: Axis.horizontal,
                 scrollCacheExtent: const ScrollCacheExtent.pixels(200),
                 itemCount: _smartPriceSuggestions.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 6),
+                separatorBuilder: (_, _) => const SizedBox(width: 6),
                 itemBuilder: (context, index) {
                   final amount = _smartPriceSuggestions[index];
                   final formattedText = NumberFormat('#,###', 'vi_VN').format(amount).replaceAll(',', '.');
@@ -462,7 +462,7 @@ class _ItemWarrantyPurchaseCardState extends State<ItemWarrantyPurchaseCard> {
               scrollDirection: Axis.horizontal,
               scrollCacheExtent: const ScrollCacheExtent.pixels(200),
               itemCount: _quickStores.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 6),
+              separatorBuilder: (_, _) => const SizedBox(width: 6),
               itemBuilder: (context, index) {
                 final store = _quickStores[index];
                 return ActionChip(

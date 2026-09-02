@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:home_sync/core/errors/failures.dart';
+import 'package:home_sync/core/utils/api_handler.dart';
 import 'package:home_sync/core/utils/warranty_calculator.dart';
 import 'package:home_sync/features/maintenance/data/mappers/category_mapper.dart';
 import 'package:home_sync/features/maintenance/data/mappers/maintenance_task_mapper.dart';
@@ -151,37 +151,27 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
   final MaintenanceRemoteDataSource _remoteDataSource;
 
   @override
-  Future<Either<Failure, List<MaintenanceTaskEntity>>> getTasks({String? itemId, bool? isCompleted}) async {
-    try {
+  Future<Either<Failure, List<MaintenanceTaskEntity>>> getTasks({String? itemId, bool? isCompleted}) {
+    return safeApiCall(() async {
       final models = await _remoteDataSource.getTasks(itemId: itemId, isCompleted: isCompleted);
-      return Right(models.map(MaintenanceTaskMapper.toEntity).toList());
-    } on PostgrestException catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - MAINTENANCE_TASKS] Code: [${e.code}] Message: ${e.message} | Details: ${e.details} | Hint: ${e.hint}');
-      return Left(ServerFailure('[${e.code}] ${e.message}'));
-    } catch (e) {
-      debugPrint('[HOMESYNC DB ERROR - MAINTENANCE_TASKS] Lỗi không xác định: $e');
-      return Left(ServerFailure(e.toString()));
-    }
+      return models.map(MaintenanceTaskMapper.toEntity).toList();
+    });
   }
 
   @override
-  Future<Either<Failure, MaintenanceTaskEntity>> addTask(MaintenanceTaskEntity task) async {
-    try {
+  Future<Either<Failure, MaintenanceTaskEntity>> addTask(MaintenanceTaskEntity task) {
+    return safeApiCall(() async {
       final model = await _remoteDataSource.addTask(MaintenanceTaskMapper.toModel(task));
-      return Right(MaintenanceTaskMapper.toEntity(model));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return MaintenanceTaskMapper.toEntity(model);
+    });
   }
 
   @override
-  Future<Either<Failure, MaintenanceTaskEntity>> updateTask(MaintenanceTaskEntity task) async {
-    try {
+  Future<Either<Failure, MaintenanceTaskEntity>> updateTask(MaintenanceTaskEntity task) {
+    return safeApiCall(() async {
       final model = await _remoteDataSource.updateTask(MaintenanceTaskMapper.toModel(task));
-      return Right(MaintenanceTaskMapper.toEntity(model));
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return MaintenanceTaskMapper.toEntity(model);
+    });
   }
 
   @override
@@ -193,8 +183,8 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
     String? technicianPhone,
     String? receiptImageUrl,
     String? notes,
-  }) async {
-    try {
+  }) {
+    return safeApiCall(() async {
       await _remoteDataSource.completeTask(
         taskId: taskId,
         completedDate: completedDate,
@@ -204,45 +194,37 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
         receiptImageUrl: receiptImageUrl,
         notes: notes,
       );
-      return const Right(unit);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return unit;
+    });
   }
 
   @override
-  Future<Either<Failure, Unit>> deleteTask(String id) async {
-    try {
+  Future<Either<Failure, Unit>> deleteTask(String id) {
+    return safeApiCall(() async {
       await _remoteDataSource.deleteTask(id);
-      return const Right(unit);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return unit;
+    });
   }
 
   List<CategoryEntity>? _cachedCategories;
 
   @override
-  Future<Either<Failure, List<CategoryEntity>>> getCategories({bool forceRefresh = false}) async {
+  Future<Either<Failure, List<CategoryEntity>>> getCategories({bool forceRefresh = false}) {
     if (!forceRefresh && _cachedCategories != null && _cachedCategories!.isNotEmpty) {
-      return Right(_cachedCategories!);
+      return Future.value(Right(_cachedCategories!));
     }
-    try {
+    return safeApiCall(() async {
       final models = await _remoteDataSource.getCategories();
       _cachedCategories = models.map(CategoryMapper.toEntity).toList();
-      return Right(_cachedCategories!);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return _cachedCategories!;
+    });
   }
 
   @override
-  Future<Either<Failure, List<MaintenancePresetEntity>>> getPresetsByCategory(String categoryId) async {
-    try {
+  Future<Either<Failure, List<MaintenancePresetEntity>>> getPresetsByCategory(String categoryId) {
+    return safeApiCall(() async {
       final models = await _remoteDataSource.getPresetsByCategory(categoryId);
-      return Right(models.map(CategoryMapper.presetToEntity).toList());
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
+      return models.map(CategoryMapper.presetToEntity).toList();
+    });
   }
 }

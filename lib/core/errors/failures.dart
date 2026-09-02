@@ -7,6 +7,16 @@ abstract class Failure {
   String toString() => message;
 }
 
+/// Lỗi mất kết nối Internet / SocketException
+class NetworkFailure extends Failure {
+  const NetworkFailure([super.message = 'Không có kết nối mạng. Vui lòng kiểm tra Wi-Fi/4G.']);
+}
+
+/// Lỗi kết nối quá hạn (TimeoutException)
+class TimeoutFailure extends Failure {
+  const TimeoutFailure([super.message = 'Kết nối máy chủ quá hạn (15s). Vui lòng thử lại.']);
+}
+
 /// Lỗi phát sinh từ Server / Database / Supabase
 class ServerFailure extends Failure {
   const ServerFailure([super.message = 'Lỗi kết nối máy chủ hoặc truy vấn cơ sở dữ liệu.']);
