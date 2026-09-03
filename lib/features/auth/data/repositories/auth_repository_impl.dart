@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:fpdart/fpdart.dart';
@@ -24,6 +25,18 @@ abstract final class SupabaseAuthStatusCodes {
   static const String emailExists = 'email_exists';
 }
 
+/// Helpers nhận diện nền tảng an toàn đa hệ điều hành
+bool get _isDesktopOrWeb =>
+    kIsWeb ||
+    defaultTargetPlatform == TargetPlatform.windows ||
+    defaultTargetPlatform == TargetPlatform.linux ||
+    defaultTargetPlatform == TargetPlatform.macOS;
+
+bool get _isMobile =>
+    !kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS);
+
 /// Remote Data Source xử lý giao tiếp Supabase Auth & Google Sign-In SDK
 class AuthRemoteDataSource {
   AuthRemoteDataSource({
@@ -39,7 +52,21 @@ class AuthRemoteDataSource {
     return _client.auth.signInAnonymously();
   }
 
-  Future<AuthResponse> signInWithGoogle() async {
+  Future<AuthResponse?> signInWithGoogle() async {
+    if (_isDesktopOrWeb) {
+      final success = await _client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: kIsWeb ? null : 'io.supabase.homesync://login-callback',
+        authScreenLaunchMode: kIsWeb
+            ? LaunchMode.platformDefault
+            : LaunchMode.externalApplication,
+      );
+      if (!success) {
+        throw const AuthException('Không thể mở trang đăng nhập Google.');
+      }
+      return null;
+    }
+
     final googleUser = await _googleSignIn.authenticate();
     final googleAuth = googleUser.authentication;
     final idToken = googleAuth.idToken;
@@ -54,7 +81,21 @@ class AuthRemoteDataSource {
     );
   }
 
-  Future<AuthResponse> linkWithGoogle() async {
+  Future<AuthResponse?> linkWithGoogle() async {
+    if (_isDesktopOrWeb) {
+      final success = await _client.auth.linkIdentity(
+        OAuthProvider.google,
+        redirectTo: kIsWeb ? null : 'io.supabase.homesync://login-callback',
+        authScreenLaunchMode: kIsWeb
+            ? LaunchMode.platformDefault
+            : LaunchMode.externalApplication,
+      );
+      if (!success) {
+        throw const AuthException('Không thể liên kết tài khoản Google.');
+      }
+      return null;
+    }
+
     final googleUser = await _googleSignIn.authenticate();
     final googleAuth = googleUser.authentication;
     final idToken = googleAuth.idToken;
@@ -70,7 +111,13 @@ class AuthRemoteDataSource {
   }
 
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    if (_isMobile) {
+      try {
+        await _googleSignIn.signOut();
+      } catch (e) {
+        debugPrint('[HomeSync Auth] Cảnh báo signOut Google: $e');
+      }
+    }
     await _client.auth.signOut();
   }
 
@@ -101,7 +148,34 @@ class AuthRepositoryImpl implements AuthRepository {
       return await safeApiCall(() async {
         debugPrint('[HomeSync Auth] Đang bắt đầu đăng nhập bằng tài khoản Google...');
         final response = await _remoteDataSource.signInWithGoogle();
-        final user = response.user;
+        if (_isDesktopOrWeb && response == null) {
+          final currentUser = _remoteDataSource.currentUser;
+          if (currentUser != null) {
+            return _toEntity(currentUser);
+          }
+          // Trên Web & Desktop (Windows, Linux, macOS), OAuth chuyển hướng trình duyệt hoặc mở App ngoài.
+          // Chờ phản hồi đăng nhập thực sự từ Supabase authStateChanges, tuyệt đối không emit User giả mạo.
+          final completer = Completer<AuthUserEntity>();
+          late final StreamSubscription<AuthState> sub;
+          sub = _remoteDataSource.authStateChanges.listen((state) {
+            final user = state.session?.user;
+            if (state.event == AuthChangeEvent.signedIn && user != null) {
+              sub.cancel();
+              if (!completer.isCompleted) {
+                completer.complete(_toEntity(user));
+              }
+            }
+          });
+
+          return await completer.future.timeout(
+            const Duration(seconds: 45),
+            onTimeout: () {
+              sub.cancel();
+              throw const AuthException('Đang chuyển hướng xác thực Google...');
+            },
+          );
+        }
+        final user = response?.user;
         if (user == null) {
           throw const AuthException('Không lấy được thông tin người dùng từ Google.');
         }
@@ -152,7 +226,32 @@ class AuthRepositoryImpl implements AuthRepository {
       return await safeApiCall(() async {
         debugPrint('[HomeSync Auth] Đang bắt đầu liên kết tài khoản ẩn danh hiện tại với Google...');
         final response = await _remoteDataSource.linkWithGoogle();
-        final user = response.user;
+        if (_isDesktopOrWeb && response == null) {
+          final currentUser = _remoteDataSource.currentUser;
+          if (currentUser != null && !currentUser.isAnonymous) {
+            return _toEntity(currentUser);
+          }
+          final completer = Completer<AuthUserEntity>();
+          late final StreamSubscription<AuthState> sub;
+          sub = _remoteDataSource.authStateChanges.listen((state) {
+            final user = state.session?.user;
+            if (user != null && !user.isAnonymous) {
+              sub.cancel();
+              if (!completer.isCompleted) {
+                completer.complete(_toEntity(user));
+              }
+            }
+          });
+
+          return await completer.future.timeout(
+            const Duration(seconds: 45),
+            onTimeout: () {
+              sub.cancel();
+              throw const AuthException('Đang chuyển hướng xác thực Google...');
+            },
+          );
+        }
+        final user = response?.user;
         if (user == null) {
           throw const AuthException('Không thể liên kết tài khoản Google.');
         }
