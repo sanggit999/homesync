@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -51,9 +52,29 @@ Future<void> initDependencies() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
 
-  await GoogleSignIn.instance.initialize(
-    serverClientId: AppConfig.googleWebClientId,
-  );
+  final clientId =
+      AppConfig.googleWebClientId.isNotEmpty ? AppConfig.googleWebClientId : null;
+  final isMobile = !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+
+  if (isMobile) {
+    try {
+      await GoogleSignIn.instance.initialize(
+        serverClientId: clientId,
+      );
+    } catch (e) {
+      debugPrint('[HomeSync DI] Cảnh báo khởi tạo GoogleSignIn Mobile: $e');
+    }
+  } else if (kIsWeb) {
+    try {
+      await GoogleSignIn.instance.initialize(
+        clientId: clientId,
+      );
+    } catch (e) {
+      debugPrint('[HomeSync DI] Cảnh báo khởi tạo GoogleSignIn Web: $e');
+    }
+  }
   sl.registerLazySingleton<GoogleSignIn>(() => GoogleSignIn.instance);
   sl.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
   sl.registerLazySingleton<StorageService>(() => StorageService(client: sl<SupabaseClient>()));
