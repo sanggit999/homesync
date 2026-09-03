@@ -13,6 +13,8 @@ class MaintenanceCubit extends Cubit<MaintenanceState> {
     required this.addTaskUseCase,
     required this.updateTaskUseCase,
     required this.completeTaskUseCase,
+    required this.rescheduleTaskUseCase,
+    required this.cancelTaskUseCase,
     required this.deleteTaskUseCase,
     required this.getCategoriesUseCase,
     required this.getPresetsByCategoryUseCase,
@@ -22,6 +24,8 @@ class MaintenanceCubit extends Cubit<MaintenanceState> {
   final AddTaskUseCase addTaskUseCase;
   final UpdateTaskUseCase updateTaskUseCase;
   final CompleteTaskUseCase completeTaskUseCase;
+  final RescheduleTaskUseCase rescheduleTaskUseCase;
+  final CancelTaskUseCase cancelTaskUseCase;
   final DeleteTaskUseCase deleteTaskUseCase;
   final GetCategoriesUseCase getCategoriesUseCase;
   final GetPresetsByCategoryUseCase getPresetsByCategoryUseCase;
@@ -74,6 +78,24 @@ class MaintenanceCubit extends Cubit<MaintenanceState> {
   /// Hoàn thành lịch bảo trì (tự động tính chu kỳ tiếp theo & lưu vào nhật ký chi phí)
   Future<void> completeTask(CompleteTaskParams params) async {
     final result = await completeTaskUseCase(params);
+    result.fold(
+      (failure) => emit(MaintenanceError(failure.message)),
+      (_) => loadMaintenanceData(),
+    );
+  }
+
+  /// Dời lịch bảo trì sang ngày khác (Snooze / Reschedule)
+  Future<void> rescheduleTask(RescheduleTaskParams params) async {
+    final result = await rescheduleTaskUseCase(params);
+    result.fold(
+      (failure) => emit(MaintenanceError(failure.message)),
+      (_) => loadMaintenanceData(),
+    );
+  }
+
+  /// Bỏ qua / Hủy chu kỳ bảo dưỡng lần này (lưu vết 0₫ vào sổ cái và nhảy sang chu kỳ kế tiếp)
+  Future<void> cancelTask(CancelTaskParams params) async {
+    final result = await cancelTaskUseCase(params);
     result.fold(
       (failure) => emit(MaintenanceError(failure.message)),
       (_) => loadMaintenanceData(),

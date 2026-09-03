@@ -115,3 +115,56 @@ class GetPresetsByCategoryUseCase implements UseCase<List<MaintenancePresetEntit
     return _repository.getPresetsByCategory(categoryId);
   }
 }
+
+/// Params cho RescheduleTaskUseCase
+class RescheduleTaskParams {
+  const RescheduleTaskParams({
+    required this.taskId,
+    required this.newDueDate,
+    this.reason,
+  });
+
+  final String taskId;
+  final DateTime newDueDate;
+  final String? reason;
+}
+
+/// Use Case: Dời lịch bảo trì sang ngày khác (Snooze / Reschedule)
+class RescheduleTaskUseCase implements UseCase<Unit, RescheduleTaskParams> {
+  const RescheduleTaskUseCase(this._repository);
+  final MaintenanceRepository _repository;
+
+  @override
+  Future<Either<Failure, Unit>> call(RescheduleTaskParams params) {
+    return _repository.rescheduleTask(
+      taskId: params.taskId,
+      newDueDate: params.newDueDate,
+      reason: params.reason,
+    );
+  }
+}
+
+class CancelTaskParams {
+  const CancelTaskParams({
+    required this.taskId,
+    this.reason,
+  });
+
+  final String taskId;
+  final String? reason;
+}
+
+/// Use Case: Bỏ qua / Hủy chu kỳ bảo dưỡng lần này và lưu vết 0₫ vào sổ cái
+class CancelTaskUseCase implements UseCase<Unit, CancelTaskParams> {
+  const CancelTaskUseCase(this._repository);
+  final MaintenanceRepository _repository;
+
+  @override
+  Future<Either<Failure, Unit>> call(CancelTaskParams params) {
+    return _repository.cancelTaskCycle(
+      taskId: params.taskId,
+      reason: params.reason,
+    );
+  }
+}
+

@@ -168,6 +168,8 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => AddTaskUseCase(sl<MaintenanceRepository>()));
   sl.registerLazySingleton(() => UpdateTaskUseCase(sl<MaintenanceRepository>()));
   sl.registerLazySingleton(() => CompleteTaskUseCase(sl<MaintenanceRepository>()));
+  sl.registerLazySingleton(() => RescheduleTaskUseCase(sl<MaintenanceRepository>()));
+  sl.registerLazySingleton(() => CancelTaskUseCase(sl<MaintenanceRepository>()));
   sl.registerLazySingleton(() => DeleteTaskUseCase(sl<MaintenanceRepository>()));
   sl.registerLazySingleton(() => GetCategoriesUseCase(sl<MaintenanceRepository>()));
   sl.registerLazySingleton(() => GetPresetsByCategoryUseCase(sl<MaintenanceRepository>()));
@@ -236,6 +238,8 @@ Future<void> initDependencies() async {
       addTaskUseCase: sl<AddTaskUseCase>(),
       updateTaskUseCase: sl<UpdateTaskUseCase>(),
       completeTaskUseCase: sl<CompleteTaskUseCase>(),
+      rescheduleTaskUseCase: sl<RescheduleTaskUseCase>(),
+      cancelTaskUseCase: sl<CancelTaskUseCase>(),
       deleteTaskUseCase: sl<DeleteTaskUseCase>(),
       getCategoriesUseCase: sl<GetCategoriesUseCase>(),
       getPresetsByCategoryUseCase: sl<GetPresetsByCategoryUseCase>(),

@@ -23,7 +23,13 @@ class AppRoutes {
   static String itemEditPath(String id) => '/items/edit/$id';
 
   // Sub-routes for Maintenance & Service Logs Feature
+  static const String maintenanceAdd = '/maintenance/add';
   static const String maintenanceAddLog = '/maintenance/add-log';
+  static const String maintenanceDetail = '/maintenance/detail/:id';
+  static const String maintenanceEdit = '/maintenance/edit/:id';
+
+  static String maintenanceDetailPath(String id) => '/maintenance/detail/$id';
+  static String maintenanceEditPath(String id) => '/maintenance/edit/$id';
 
   // Sub-routes for Dashboard & Export Feature
   static const String pdfPreview = '/pdf-preview';
