@@ -14,6 +14,9 @@ import 'package:home_sync/features/items/presentation/pages/add_edit_item_page.d
 import 'package:home_sync/features/items/presentation/pages/item_detail_page.dart';
 import 'package:home_sync/features/items/presentation/pages/item_list_page.dart';
 import 'package:home_sync/features/items/presentation/pages/receipt_viewer_page.dart';
+import 'package:home_sync/features/maintenance/domain/entities/maintenance_task_entity.dart';
+import 'package:home_sync/features/maintenance/presentation/pages/add_edit_maintenance_page.dart';
+import 'package:home_sync/features/maintenance/presentation/pages/maintenance_detail_page.dart';
 import 'package:home_sync/features/maintenance/presentation/pages/maintenance_list_page.dart';
 import 'package:home_sync/features/profile/presentation/pages/family_members_page.dart';
 import 'package:home_sync/features/profile/presentation/pages/profile_page.dart';
@@ -124,8 +127,41 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,
+      path: AppRoutes.maintenanceAdd,
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return AddEditMaintenancePage(
+          preselectedItemId: extra?['itemId'] as String?,
+          preselectedItemName: extra?['itemName'] as String?,
+          taskToEdit: extra?['task'] as MaintenanceTaskEntity?,
+        );
+      },
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
       path: AppRoutes.maintenanceAddLog,
       builder: (context, state) => const AddServiceLogPage(),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: AppRoutes.maintenanceDetail,
+      builder: (context, state) {
+        final id = state.pathParameters['id'] ?? '';
+        final task = state.extra as MaintenanceTaskEntity?;
+        return MaintenanceDetailPage(taskId: id, initialTask: task);
+      },
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: AppRoutes.maintenanceEdit,
+      builder: (context, state) {
+        final task = state.extra as MaintenanceTaskEntity?;
+        return AddEditMaintenancePage(
+          taskToEdit: task,
+          preselectedItemId: task?.itemId,
+          preselectedItemName: task?.itemName,
+        );
+      },
     ),
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,

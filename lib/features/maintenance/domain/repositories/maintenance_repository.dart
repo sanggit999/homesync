@@ -21,6 +21,15 @@ abstract class MaintenanceRepository {
     String? notes,
   });
   Future<Either<Failure, Unit>> deleteTask(String id);
+  Future<Either<Failure, Unit>> rescheduleTask({
+    required String taskId,
+    required DateTime newDueDate,
+    String? reason,
+  });
+  Future<Either<Failure, Unit>> cancelTaskCycle({
+    required String taskId,
+    String? reason,
+  });
   Future<Either<Failure, List<CategoryEntity>>> getCategories();
   Future<Either<Failure, List<MaintenancePresetEntity>>> getPresetsByCategory(String categoryId);
 }

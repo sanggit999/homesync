@@ -38,6 +38,8 @@ class ServiceLogsRemoteDataSource {
   Future<ServiceLogModel> addLog(ServiceLogModel log) async {
     final data = log.toJson();
     data.remove('id');
+    data.remove('item_name');
+    data.remove('created_at');
     final response = await _client.from('service_logs').insert(data).select('*, items(name)').single();
     return ServiceLogModel.fromJson(response);
   }

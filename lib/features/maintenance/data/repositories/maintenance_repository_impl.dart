@@ -36,8 +36,21 @@ class MaintenanceRemoteDataSource {
     }).toList();
   }
 
+  Map<String, dynamic> _cleanTaskJson(MaintenanceTaskModel task, {bool isNew = false}) {
+    final data = Map<String, dynamic>.from(task.toJson());
+    // Loại bỏ các trường computed / join từ bảng items
+    data.remove('item_name');
+    data.remove('item_location');
+    data.remove('created_at');
+    if (isNew || task.id.isEmpty || task.id.startsWith('temp_')) {
+      data.remove('id');
+    }
+    return data;
+  }
+
   Future<MaintenanceTaskModel> addTask(MaintenanceTaskModel task) async {
-    final response = await _client.from('maintenance_tasks').insert(task.toJson()).select('*, items(name)').single();
+    final data = _cleanTaskJson(task, isNew: true);
+    final response = await _client.from('maintenance_tasks').insert(data).select('*, items(name)').single();
     final map = Map<String, dynamic>.from(response);
     if (map['items'] != null && map['items'] is Map) {
       map['item_name'] = map['items']['name'];
@@ -46,7 +59,8 @@ class MaintenanceRemoteDataSource {
   }
 
   Future<MaintenanceTaskModel> updateTask(MaintenanceTaskModel task) async {
-    final response = await _client.from('maintenance_tasks').update(task.toJson()).eq('id', task.id).select('*, items(name)').single();
+    final data = _cleanTaskJson(task);
+    final response = await _client.from('maintenance_tasks').update(data).eq('id', task.id).select('*, items(name)').single();
     final map = Map<String, dynamic>.from(response);
     if (map['items'] != null && map['items'] is Map) {
       map['item_name'] = map['items']['name'];
@@ -103,6 +117,57 @@ class MaintenanceRemoteDataSource {
 
   Future<void> deleteTask(String id) async {
     await _client.from('maintenance_tasks').delete().eq('id', id);
+  }
+
+  Future<void> rescheduleTask({
+    required String taskId,
+    required DateTime newDueDate,
+    String? reason,
+  }) async {
+    final updateData = <String, dynamic>{
+      'next_due_date': newDueDate.toIso8601String().split('T').first,
+    };
+    if (reason != null && reason.trim().isNotEmpty) {
+      updateData['notes'] = reason.trim();
+    }
+    await _client.from('maintenance_tasks').update(updateData).eq('id', taskId);
+  }
+
+  /// Bỏ qua / Hủy chu kỳ bảo dưỡng hiện tại: đẩy sang chu kỳ tiếp theo và lưu vết 0₫ vào service_logs
+  Future<void> cancelTaskCycle({
+    required String taskId,
+    String? reason,
+  }) async {
+    final response = await _client.from('maintenance_tasks').select('*, items(user_id, name)').eq('id', taskId).single();
+    final task = MaintenanceTaskModel.fromJson(response);
+    final now = DateTime.now();
+
+    final nextDueDate = WarrantyCalculator.calculateNextDueDate(
+      lastDate: now,
+      frequencyMonths: task.frequencyMonths,
+    );
+
+    final updateData = <String, dynamic>{
+      'next_due_date': nextDueDate.toIso8601String().split('T').first,
+    };
+    if (reason != null && reason.trim().isNotEmpty) {
+      updateData['notes'] = 'Bỏ qua đợt ${now.month}/${now.year}: ${reason.trim()}';
+    }
+    await _client.from('maintenance_tasks').update(updateData).eq('id', taskId);
+
+    final userId = (response['items'] is Map ? response['items']['user_id'] as String? : null) ??
+        _client.auth.currentUser?.id ??
+        '';
+    await _client.from('service_logs').insert({
+      'user_id': userId,
+      'item_id': task.itemId,
+      'task_id': task.id,
+      'service_type': 'cancelled',
+      'title': '${task.taskName} (Đã hủy / Bỏ qua)',
+      'service_date': now.toIso8601String().split('T').first,
+      'cost': 0.0,
+      'notes': reason?.trim().isNotEmpty == true ? reason!.trim() : 'Người dùng chủ động bỏ qua chu kỳ này.',
+    });
   }
 
   /// Lấy toàn bộ danh mục từ Supabase và sắp xếp chuẩn UX ('Khác' luôn đứng cuối cùng)
@@ -202,6 +267,36 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
   Future<Either<Failure, Unit>> deleteTask(String id) {
     return safeApiCall(() async {
       await _remoteDataSource.deleteTask(id);
+      return unit;
+    });
+  }
+
+  @override
+  Future<Either<Failure, Unit>> rescheduleTask({
+    required String taskId,
+    required DateTime newDueDate,
+    String? reason,
+  }) {
+    return safeApiCall(() async {
+      await _remoteDataSource.rescheduleTask(
+        taskId: taskId,
+        newDueDate: newDueDate,
+        reason: reason,
+      );
+      return unit;
+    });
+  }
+
+  @override
+  Future<Either<Failure, Unit>> cancelTaskCycle({
+    required String taskId,
+    String? reason,
+  }) {
+    return safeApiCall(() async {
+      await _remoteDataSource.cancelTaskCycle(
+        taskId: taskId,
+        reason: reason,
+      );
       return unit;
     });
   }
